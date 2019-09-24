@@ -1,2 +1,2 @@
 # GFCC
-GFCC prototype code
+Prototype code for the GFCC library
