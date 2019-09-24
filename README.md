@@ -1,2 +1,2 @@
-# gfcc
+# Gfcc
 GFCC prototype code
