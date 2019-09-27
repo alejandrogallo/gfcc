@@ -178,3 +178,30 @@ cmake -DCBLAS_INCLUDE_DIRS=$MKL_INC \
 To enable CUDA build, add -DNWX_CUDA=ON
 
 ```
+Build instructions for Mac OS
+----------------------------
+
+```
+brew install gcc openmpi cmake wget autoconf automake
+
+export FC=gfortran-9
+export CC=gcc-9
+export CXX=g++-9
+export GFCC_INSTALL_PATH=$HOME/gfcc_install
+
+git clone https://github.com/spec-org/gfcc.git
+
+cd contrib/CMakeBuild
+mkdir build && cd build
+cmake -DCMAKE_INSTALL_PREFIX=$GFCC_INSTALL_PATH ..
+make install
+
+cd ../TAMM
+mkdir build && cd build
+cmake -DCMAKE_INSTALL_PREFIX=$GFCC_INSTALL_PATH ..
+make -j3 install
+
+cd ..
+mkdir build && cd build
+cmake -DCMAKE_INSTALL_PREFIX=$GFCC_INSTALL_PATH ..
+make -j2 install
