@@ -218,8 +218,7 @@ export CC=gcc-8
 export CXX=g++-8
 export GFCC_INSTALL_PATH=$HOME/gfcc_install
 
-sudo apt install g++-8 gcc-8 gfortran-8
-
+sudo apt install g++-8 gcc-8 gfortran-8 openmpi-dev
 
 git clone https://github.com/spec-org/gfcc.git
 
