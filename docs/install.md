@@ -71,7 +71,7 @@ make -j2
 ## RUNNING THE CODE
 ------------------
 From the build folder, run:  
-`mpirun -n 4 ./test_stage/$GFCC_INSTALL_PATH/gfcc_install/tests/GF_CCSD_CS ../tests/co.nwx`
+`mpirun -n 4 ./test_stage/$GFCC_INSTALL_PATH/tests/GF_CCSD_CS ../tests/co.nwx`
 
 
 --------------------------------------------------------
