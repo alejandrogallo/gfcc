@@ -207,6 +207,7 @@ cd ..
 mkdir build && cd build
 cmake -DCMAKE_INSTALL_PREFIX=$GFCC_INSTALL_PATH ..
 make -j2 install
+```
 
 Build instructions for Ubuntu Bionic 18.04
 ----------------------------
