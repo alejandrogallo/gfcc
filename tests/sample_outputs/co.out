@@ -1,0 +1,2141 @@
+
+Common Options
+{
+ max iter = 50
+ basis = cc-pvdz
+ geom_units = angstrom
+ debug = false
+}
+
+Number of nodes, mpi ranks per node provided: 1, 3
+Number of nodes, mpi ranks per node used for SCF calculation: 1, 3
+
+SCF Options
+{
+ tol_int = 1e-10
+ tol_lindep = 1e-06
+ conve = 1e-10
+ convd = 1e-09
+ diis_hist = 10
+ AO_tilesize = 30
+ restart = false
+ debug = false
+}
+
+Nuclear repulsion energy = 22.5182
+computing non-negligible shell-pair list ... done (0.000293367 s)
+# of {all,non-negligible} shell-pairs = {78,78}
+
+Number of basis functions: 28
+Number of AO tiles = 12
+
+Time for initial setup: 0.00553729 secs
+
+Time for computing 1-e integrals T, V, S: 0.00198796 secs
+
+Time for computing Core Hamiltonian H=T+V: 0.000590638 secs
+
+Time for tamm to eigen (H1-H) : 4.2265e-05 secs
+
+Time for tamm to eigen (S1-S) : 1.5537e-05 secs
+
+Time for computing orthogonalizer: 0.000213814 secs
+
+computing Schwarz bound prerequisites (kernel=10) ... done (0.00229137 s)
+
+Projecting minimal basis SOAD onto basis set specified (cc-pvdz)
+
+Initial guess: Time to compute guess: 0.0032116 secs
+Initial guess: time to compute, broadcast Ft: 0.000508543 secs
+Initial guess: Time to compute density: 0.000197061 secs
+Total Time to compute initial guess: 0.00583328 secs
+
+
+ Hartree-Fock iterations
+----------------------------------------------------------------------
+ Iter     Energy            E-Diff            RMSD            Time
+----------------------------------------------------------------------
+    1  -112.8774407763  -135.3956215798    0.3193152179          0.01 
+    2  -113.0965304333    -0.2190896570    0.1441329054          0.02 
+    3  -112.6836516273     0.4128788060    0.0628112965          0.02 
+    4  -112.7543385881    -0.0706869607    0.0047898588          0.02 
+    5  -112.7498655638     0.0044730243    0.0016374021          0.02 
+    6  -112.7491727526     0.0006928111    0.0001823527          0.02 
+    7  -112.7493041576    -0.0001314050    0.0000489657          0.03 
+    8  -112.7493057055    -0.0000015480    0.0000142582          0.03 
+    9  -112.7493112105    -0.0000055049    0.0000012208          0.03 
+   10  -112.7493113367    -0.0000001263    0.0000001023          0.03 
+   11  -112.7493113377    -0.0000000010    0.0000000054          0.04 
+   12  -112.7493113371     0.0000000007    0.0000000006          0.04 
+   13  -112.7493113372    -0.0000000001    0.0000000001          0.04 
+   14  -112.7493113372    -0.0000000000    0.0000000000          0.05 
+
+** Hartree-Fock energy = -112.7493113372152
+writing orbitals to file... done.
+
+Time taken for Hartree-Fock: 0.3975963350000 secs
+
+CCSD Options
+{
+ threshold = 1e-06
+ tilesize = 50
+ ccsd_maxiter = 50
+ itilesize = 1000
+ readt = false
+ writet = true
+ gf_restart = true
+ gf_p_oi_range  = 1
+ gf_ndiis       = 10
+ gf_maxiter     = 100
+ gf_eta         = -0.01
+ gf_damping_factor         = 1
+ gf_threshold   = 0.01
+ gf_omega_min   = -0.8
+ gf_omega_max   = -0.4
+ gf_omega_min_e = -2
+ gf_omega_max_e = 0
+ gf_omega_delta = 0.01
+ gf_omega_delta_e = 0.01
+ debug = false
+}
+
+CD Options
+{
+ diagtol = 1e-08
+ max_cvecs_factor = 16
+ debug = false
+}
+
+-----------------------------------------------------
+Begin Cholesky Decomposition ... 
+
+#AOs, #electrons = 28 , 7
+
+Time taken for 2-index transform: 0.000126065 secs
+Number of cholesky vectors = 272
+
+Time taken for cholesky decomp: 0.144121086 secs
+
+Total Time for constructing CholVpr: 0.06380814 secs
+  --> Time for 2-step contraction: 0.007844487 secs
+
+Time for ga_chol_mo -> CholVpr_tamm conversion: 0.003485337 secs
+
+Total Time taken for CD (+SVD): 0.213306297 secs
+
+
+ CCSD iterations
+------------------------------------------------------------------
+ Iter          Residuum       Correlation     Cpu    Wall    V2*C2
+------------------------------------------------------------------
+     1  0.7364418920317  0.0000000000000     0.0     0.12     0.0
+     2  0.1158142441990  -0.2907782941611     0.0     0.12     0.0
+     3  0.0363031468254  -0.2844915773366     0.0     0.12     0.0
+     4  0.0131822245605  -0.2968076296801     0.0     0.12     0.0
+     5  0.0062643779032  -0.2961872990685     0.0     0.12     0.0
+ MICROCYCLE DIIS UPDATE:                    6                    5
+     6  0.0025326104856  -0.2980280420497     0.0     0.12     0.0
+     7  0.0009646867550  -0.2980062309419     0.0     0.12     0.0
+     8  0.0004681183813  -0.2979866348422     0.0     0.12     0.0
+     9  0.0002314495649  -0.2980161064243     0.0     0.12     0.0
+    10  0.0001207468617  -0.2980210459952     0.0     0.12     0.0
+ MICROCYCLE DIIS UPDATE:                   11                    5
+    11  0.0000143875176  -0.2980349862386     0.0     0.14     0.0
+    12  0.0000046395417  -0.2980383647404     0.0     0.12     0.0
+    13  0.0000018577191  -0.2980385210886     0.0     0.12     0.0
+    14  0.0000009093745  -0.2980386910196     0.0     0.12     0.0
+------------------------------------------------------------------
+ Iterations converged
+ CCSD correlation energy / hartree =        -0.298038691019602
+ CCSD total energy / hartree       =      -113.047350028234831
+
+Time taken for Cholesky CCSD: 1.727286410000000 secs
+
+CCSD Options
+{
+ threshold = 1e-06
+ tilesize = 50
+ ccsd_maxiter = 50
+ itilesize = 1000
+ readt = false
+ writet = true
+ gf_restart = true
+ gf_p_oi_range  = 1
+ gf_ndiis       = 10
+ gf_maxiter     = 100
+ gf_eta         = -0.01
+ gf_damping_factor         = 1
+ gf_threshold   = 0.01
+ gf_omega_min   = -0.8
+ gf_omega_max   = -0.4
+ gf_omega_min_e = -2
+ gf_omega_max_e = 0
+ gf_omega_delta = 0.01
+ gf_omega_delta_e = 0.01
+ debug = false
+}
+
+#occupied, #virtual = 14, 42
+
+Time for computing intermediates: 0.110997154 secs
+  -- Time for allocating intermediates: 0.004925893 secs
+  -- Time for deallocating intermediates: 0.002670247 secs
+qr_rank in level 1 = 14
+
+-------------------------------------------------------
+GF-CCSD (omega = -0.8) 
+No of processes used to compute each orbital index = 3
+GF-CCSD Time for W,oi (-0.8,0) = 0.0285309 secs, #iter = 1
+GF-CCSD Time for W,oi (-0.8,1) = 0.0280477 secs, #iter = 1
+GF-CCSD Time for W,oi (-0.8,2) = 0.139044 secs, #iter = 10
+GF-CCSD Time for W,oi (-0.8,3) = 0.142182 secs, #iter = 10
+GF-CCSD Time for W,oi (-0.8,4) = 0.144339 secs, #iter = 10
+GF-CCSD Time for W,oi (-0.8,5) = 0.144689 secs, #iter = 10
+GF-CCSD Time for W,oi (-0.8,6) = 0.138007 secs, #iter = 10
+Total GF-CCSD Time (W = -0.8) = 0.775554105 secs
+-------------------------------------------------------
+
+-------------------------------------------------------
+GF-CCSD (omega = -0.4) 
+No of processes used to compute each orbital index = 3
+GF-CCSD Time for W,oi (-0.4,0) = 0.0283274 secs, #iter = 1
+GF-CCSD Time for W,oi (-0.4,1) = 0.0280284 secs, #iter = 1
+GF-CCSD Time for W,oi (-0.4,2) = 0.0824758 secs, #iter = 6
+GF-CCSD Time for W,oi (-0.4,3) = 0.13609 secs, #iter = 10
+GF-CCSD Time for W,oi (-0.4,4) = 0.137008 secs, #iter = 10
+GF-CCSD Time for W,oi (-0.4,5) = 0.137572 secs, #iter = 10
+GF-CCSD Time for W,oi (-0.4,6) = 0.138858 secs, #iter = 10
+Total GF-CCSD Time (W = -0.4) = 0.698213982 secs
+-------------------------------------------------------
+
+Time to read in pre-computed Q1/Q2: 0.000958932 secs
+
+Time for orthogonalization: 0.079234903 secs
+
+Time for normalizing and copying back: 0.027170567 secs
+
+Total time for Gram-Schmidt: 0.10640547 secs
+
+Time to contract Q1/Q2: 0.05331006 secs
+
+Time to compute Cp: 0.0149488 secs
+
+spectral function (omega_npts = 41):
+W = -0.8, omega_A0 =  2.10617244682
+W = -0.79, omega_A0 =  2.60010908011
+W = -0.78, omega_A0 =  3.33096470155
+W = -0.77, omega_A0 =  4.4892989643
+W = -0.76, omega_A0 =  6.50701194807
+W = -0.75, omega_A0 =  10.5262990885
+W = -0.74, omega_A0 =  20.2330070141
+W = -0.73, omega_A0 =  49.1399443107
+W = -0.72, omega_A0 =  89.8321151719
+W = -0.71, omega_A0 =  43.7821783282
+W = -0.7, omega_A0 =  19.8187919148
+W = -0.69, omega_A0 =  12.3650636569
+W = -0.68, omega_A0 =  10.1541644933
+W = -0.67, omega_A0 =  10.4361023206
+W = -0.66, omega_A0 =  12.9844348486
+W = -0.65, omega_A0 =  19.369416033
+W = -0.64, omega_A0 =  35.5078685269
+W = -0.63, omega_A0 =  83.9038674712
+W = -0.62, omega_A0 =  182.233211988
+W = -0.61, omega_A0 =  103.068699544
+W = -0.6, omega_A0 =  41.3598171485
+W = -0.59, omega_A0 =  21.1229057626
+W = -0.58, omega_A0 =  13.1521732429
+W = -0.57, omega_A0 =  9.53194767491
+W = -0.56, omega_A0 =  7.91606322026
+W = -0.55, omega_A0 =  7.57965572448
+W = -0.54, omega_A0 =  8.55020195379
+W = -0.53, omega_A0 =  11.7631259411
+W = -0.52, omega_A0 =  20.7798006657
+W = -0.51, omega_A0 =  49.1168966651
+W = -0.5, omega_A0 =  90.1506444269
+W = -0.49, omega_A0 =  42.9495951972
+W = -0.48, omega_A0 =  17.9797887178
+W = -0.47, omega_A0 =  9.51176888193
+W = -0.46, omega_A0 =  5.92457768708
+W = -0.45, omega_A0 =  4.09708819488
+W = -0.44, omega_A0 =  3.03848345783
+W = -0.43, omega_A0 =  2.36662112163
+W = -0.42, omega_A0 =  1.91051585428
+W = -0.41, omega_A0 =  1.58460751796
+W = -0.4, omega_A0 =  1.34222481306
+
+omegas processed in level 1 = [-0.8,-0.4,]
+
+Time to compute spectral function (omega_npts = 41): 0.038311396 secs
+qr_rank in level 2 = 21
+
+-------------------------------------------------------
+GF-CCSD (omega = -0.6) 
+No of processes used to compute each orbital index = 3
+GF-CCSD Time for W,oi (-0.6,0) = 0.0282619 secs, #iter = 1
+GF-CCSD Time for W,oi (-0.6,1) = 0.0279191 secs, #iter = 1
+GF-CCSD Time for W,oi (-0.6,2) = 0.117432 secs, #iter = 9
+GF-CCSD Time for W,oi (-0.6,3) = 0.142122 secs, #iter = 10
+GF-CCSD Time for W,oi (-0.6,4) = 0.135943 secs, #iter = 10
+GF-CCSD Time for W,oi (-0.6,5) = 0.136253 secs, #iter = 10
+GF-CCSD Time for W,oi (-0.6,6) = 0.141826 secs, #iter = 10
+Total GF-CCSD Time (W = -0.6) = 0.739298652 secs
+-------------------------------------------------------
+
+Time to read in pre-computed Q1/Q2: 0.005372436 secs
+
+Time for orthogonalization: 0.05399685 secs
+
+Time for normalizing and copying back: 0.013302396 secs
+
+Total time for Gram-Schmidt: 0.067299246 secs
+
+Time to contract Q1/Q2: 0.076205322 secs
+
+Time to compute Cp: 0.027441749 secs
+
+spectral function (omega_npts = 41):
+W = -0.8, omega_A0 =  2.10610496006
+W = -0.79, omega_A0 =  2.60402824887
+W = -0.78, omega_A0 =  3.34308792891
+W = -0.77, omega_A0 =  4.51898290796
+W = -0.76, omega_A0 =  6.57814088326
+W = -0.75, omega_A0 =  10.7116484989
+W = -0.74, omega_A0 =  20.8074323238
+W = -0.73, omega_A0 =  51.1127907416
+W = -0.72, omega_A0 =  89.2660897044
+W = -0.71, omega_A0 =  41.9384504971
+W = -0.7, omega_A0 =  19.2283103866
+W = -0.69, omega_A0 =  12.1828382115
+W = -0.68, omega_A0 =  10.1505806614
+W = -0.67, omega_A0 =  10.5774388042
+W = -0.66, omega_A0 =  13.3439188121
+W = -0.65, omega_A0 =  20.2199204554
+W = -0.64, omega_A0 =  37.826577805
+W = -0.63, omega_A0 =  91.2811494676
+W = -0.62, omega_A0 =  184.327253268
+W = -0.61, omega_A0 =  94.797851867
+W = -0.6, omega_A0 =  38.7069134816
+W = -0.59, omega_A0 =  20.1599887424
+W = -0.58, omega_A0 =  12.7275854634
+W = -0.57, omega_A0 =  9.32182872007
+W = -0.56, omega_A0 =  7.81074478997
+W = -0.55, omega_A0 =  7.53984205368
+W = -0.54, omega_A0 =  8.57118162039
+W = -0.53, omega_A0 =  11.8809026889
+W = -0.52, omega_A0 =  21.1480973783
+W = -0.51, omega_A0 =  50.2371926095
+W = -0.5, omega_A0 =  89.8249426209
+W = -0.49, omega_A0 =  42.0947021836
+W = -0.48, omega_A0 =  17.7294024462
+W = -0.47, omega_A0 =  9.42403641301
+W = -0.46, omega_A0 =  5.88726871721
+W = -0.45, omega_A0 =  4.07914283161
+W = -0.44, omega_A0 =  3.0292694966
+W = -0.43, omega_A0 =  2.3618323778
+W = -0.42, omega_A0 =  1.9081717366
+W = -0.41, omega_A0 =  1.58370336799
+W = -0.4, omega_A0 =  1.34221017237
+
+omegas processed in level 2 = [-0.6,]
+
+Time to compute spectral function (omega_npts = 41): 0.042680036 secs
+qr_rank in level 3 = 35
+
+-------------------------------------------------------
+GF-CCSD (omega = -0.7) 
+No of processes used to compute each orbital index = 3
+GF-CCSD Time for W,oi (-0.7,0) = 0.0282176 secs, #iter = 1
+GF-CCSD Time for W,oi (-0.7,1) = 0.0278878 secs, #iter = 1
+GF-CCSD Time for W,oi (-0.7,2) = 0.134883 secs, #iter = 10
+GF-CCSD Time for W,oi (-0.7,3) = 0.136147 secs, #iter = 10
+GF-CCSD Time for W,oi (-0.7,4) = 0.136227 secs, #iter = 10
+GF-CCSD Time for W,oi (-0.7,5) = 0.137048 secs, #iter = 10
+GF-CCSD Time for W,oi (-0.7,6) = 0.138021 secs, #iter = 10
+Total GF-CCSD Time (W = -0.7) = 0.748140553 secs
+-------------------------------------------------------
+
+-------------------------------------------------------
+GF-CCSD (omega = -0.5) 
+No of processes used to compute each orbital index = 3
+GF-CCSD Time for W,oi (-0.5,0) = 0.0283042 secs, #iter = 1
+GF-CCSD Time for W,oi (-0.5,1) = 0.028018 secs, #iter = 1
+GF-CCSD Time for W,oi (-0.5,2) = 0.13541 secs, #iter = 10
+GF-CCSD Time for W,oi (-0.5,3) = 0.135764 secs, #iter = 10
+GF-CCSD Time for W,oi (-0.5,4) = 0.13675 secs, #iter = 10
+GF-CCSD Time for W,oi (-0.5,5) = 0.136685 secs, #iter = 10
+GF-CCSD Time for W,oi (-0.5,6) = 0.137676 secs, #iter = 10
+Total GF-CCSD Time (W = -0.5) = 0.748389546 secs
+-------------------------------------------------------
+
+Time to read in pre-computed Q1/Q2: 0.006184813 secs
+
+Time for orthogonalization: 0.132767746 secs
+
+Time for normalizing and copying back: 0.026665124 secs
+
+Total time for Gram-Schmidt: 0.15943287 secs
+
+Time to contract Q1/Q2: 0.122742847 secs
+
+Time to compute Cp: 0.066214786 secs
+
+spectral function (omega_npts = 41):
+W = -0.8, omega_A0 =  2.10626041493
+W = -0.79, omega_A0 =  2.60388767771
+W = -0.78, omega_A0 =  3.34243633555
+W = -0.77, omega_A0 =  4.51735041636
+W = -0.76, omega_A0 =  6.57436252802
+W = -0.75, omega_A0 =  10.7022926695
+W = -0.74, omega_A0 =  20.780014914
+W = -0.73, omega_A0 =  51.0244516387
+W = -0.72, omega_A0 =  89.2913853796
+W = -0.71, omega_A0 =  42.0041020324
+W = -0.7, omega_A0 =  19.2470730042
+W = -0.69, omega_A0 =  12.18744825
+W = -0.68, omega_A0 =  10.1495351512
+W = -0.67, omega_A0 =  10.5724396986
+W = -0.66, omega_A0 =  13.3339584357
+W = -0.65, omega_A0 =  20.2006579133
+W = -0.64, omega_A0 =  37.7845982539
+W = -0.63, omega_A0 =  91.1815131137
+W = -0.62, omega_A0 =  184.318825762
+W = -0.61, omega_A0 =  94.8311849141
+W = -0.6, omega_A0 =  38.7068638698
+W = -0.59, omega_A0 =  20.1560471855
+W = -0.58, omega_A0 =  12.7240455169
+W = -0.57, omega_A0 =  9.31908207598
+W = -0.56, omega_A0 =  7.80867334845
+W = -0.55, omega_A0 =  7.53831860817
+W = -0.54, omega_A0 =  8.57017146816
+W = -0.53, omega_A0 =  11.8805950886
+W = -0.52, omega_A0 =  21.1494899873
+W = -0.51, omega_A0 =  50.2442249634
+W = -0.5, omega_A0 =  89.8231703121
+W = -0.49, omega_A0 =  42.0876139299
+W = -0.48, omega_A0 =  17.7268734193
+W = -0.47, omega_A0 =  9.42294340152
+W = -0.46, omega_A0 =  5.88669466006
+W = -0.45, omega_A0 =  4.07880550786
+W = -0.44, omega_A0 =  3.02906161859
+W = -0.43, omega_A0 =  2.361705265
+W = -0.42, omega_A0 =  1.90809999474
+W = -0.41, omega_A0 =  1.58367220745
+W = -0.4, omega_A0 =  1.34221019585
+
+omegas processed in level 3 = [-0.7,-0.5,]
+
+Time to compute spectral function (omega_npts = 41): 0.056861666 secs
+qr_rank in level 4 = 56
+
+-------------------------------------------------------
+GF-CCSD (omega = -0.75) 
+No of processes used to compute each orbital index = 3
+GF-CCSD Time for W,oi (-0.75,0) = 0.0282281 secs, #iter = 1
+GF-CCSD Time for W,oi (-0.75,1) = 0.0280145 secs, #iter = 1
+GF-CCSD Time for W,oi (-0.75,2) = 0.13589 secs, #iter = 10
+GF-CCSD Time for W,oi (-0.75,3) = 0.136924 secs, #iter = 10
+GF-CCSD Time for W,oi (-0.75,4) = 0.136565 secs, #iter = 10
+GF-CCSD Time for W,oi (-0.75,5) = 0.1478 secs, #iter = 10
+GF-CCSD Time for W,oi (-0.75,6) = 0.148805 secs, #iter = 10
+Total GF-CCSD Time (W = -0.75) = 0.77190393 secs
+-------------------------------------------------------
+
+-------------------------------------------------------
+GF-CCSD (omega = -0.65) 
+No of processes used to compute each orbital index = 3
+GF-CCSD Time for W,oi (-0.65,0) = 0.0285388 secs, #iter = 1
+GF-CCSD Time for W,oi (-0.65,1) = 0.0290955 secs, #iter = 1
+GF-CCSD Time for W,oi (-0.65,2) = 0.139561 secs, #iter = 10
+GF-CCSD Time for W,oi (-0.65,3) = 0.137401 secs, #iter = 10
+GF-CCSD Time for W,oi (-0.65,4) = 0.138998 secs, #iter = 10
+GF-CCSD Time for W,oi (-0.65,5) = 0.137629 secs, #iter = 10
+GF-CCSD Time for W,oi (-0.65,6) = 0.138358 secs, #iter = 10
+Total GF-CCSD Time (W = -0.65) = 0.759199331 secs
+-------------------------------------------------------
+
+-------------------------------------------------------
+GF-CCSD (omega = -0.55) 
+No of processes used to compute each orbital index = 3
+GF-CCSD Time for W,oi (-0.55,0) = 0.0284309 secs, #iter = 1
+GF-CCSD Time for W,oi (-0.55,1) = 0.0283362 secs, #iter = 1
+GF-CCSD Time for W,oi (-0.55,2) = 0.136624 secs, #iter = 10
+GF-CCSD Time for W,oi (-0.55,3) = 0.13717 secs, #iter = 10
+GF-CCSD Time for W,oi (-0.55,4) = 0.138237 secs, #iter = 10
+GF-CCSD Time for W,oi (-0.55,5) = 0.138449 secs, #iter = 10
+GF-CCSD Time for W,oi (-0.55,6) = 0.138062 secs, #iter = 10
+Total GF-CCSD Time (W = -0.55) = 0.754924911 secs
+-------------------------------------------------------
+
+Time to read in pre-computed Q1/Q2: 0.007658055 secs
+
+Time for orthogonalization: 0.265372234 secs
+
+Time for normalizing and copying back: 0.040633008 secs
+
+Total time for Gram-Schmidt: 0.306005242 secs
+
+Time to contract Q1/Q2: 0.191978681 secs
+
+Time to compute Cp: 0.158559936 secs
+
+spectral function (omega_npts = 41):
+W = -0.8, omega_A0 =  2.10622258797
+W = -0.79, omega_A0 =  2.6038578115
+W = -0.78, omega_A0 =  3.3424159896
+W = -0.77, omega_A0 =  4.51734283288
+W = -0.76, omega_A0 =  6.57437560743
+W = -0.75, omega_A0 =  10.7023493074
+W = -0.74, omega_A0 =  20.7801997073
+W = -0.73, omega_A0 =  51.0251309393
+W = -0.72, omega_A0 =  89.292102489
+W = -0.71, omega_A0 =  42.004032339
+W = -0.7, omega_A0 =  19.2470326842
+W = -0.69, omega_A0 =  12.1874329508
+W = -0.68, omega_A0 =  10.1495322999
+W = -0.67, omega_A0 =  10.572447101
+W = -0.66, omega_A0 =  13.3339802412
+W = -0.65, omega_A0 =  20.2007095128
+W = -0.64, omega_A0 =  37.7847333038
+W = -0.63, omega_A0 =  91.1819202714
+W = -0.62, omega_A0 =  184.31896669
+W = -0.61, omega_A0 =  94.8308965766
+W = -0.6, omega_A0 =  38.7067821703
+W = -0.59, omega_A0 =  20.1560235561
+W = -0.58, omega_A0 =  12.7240392826
+W = -0.57, omega_A0 =  9.31908240634
+W = -0.56, omega_A0 =  7.80867681257
+W = -0.55, omega_A0 =  7.53832411412
+W = -0.54, omega_A0 =  8.57017905287
+W = -0.53, omega_A0 =  11.8806060723
+W = -0.52, omega_A0 =  21.1495088202
+W = -0.51, omega_A0 =  50.2442596946
+W = -0.5, omega_A0 =  89.8231461437
+W = -0.49, omega_A0 =  42.0876007125
+W = -0.48, omega_A0 =  17.7268752581
+W = -0.47, omega_A0 =  9.42294755001
+W = -0.46, omega_A0 =  5.88669900047
+W = -0.45, omega_A0 =  4.07880964688
+W = -0.44, omega_A0 =  3.02906547619
+W = -0.43, omega_A0 =  2.3617088269
+W = -0.42, omega_A0 =  1.9081032604
+W = -0.41, omega_A0 =  1.58367517824
+W = -0.4, omega_A0 =  1.34221287257
+
+omegas processed in level 4 = [-0.75,-0.65,-0.55,]
+
+Time to compute spectral function (omega_npts = 41): 0.074276329 secs
+
+--------------------extrapolate & converge-----------------------
+orb_index = 0, gpp = 2.86753e-05
+orb_index = 1, gpp = 0.000126075
+orb_index = 2, gpp = 0.0501195
+orb_index = 3, gpp = 0.0726466
+orb_index = 4, gpp = 0.00942747
+orb_index = 5, gpp = 0.00966554
+orb_index = 6, gpp = 0.0532134
+W = -1.99, lomega_A0 =  0.195227232407
+orb_index = 0, gpp = 2.16242149988e-05
+orb_index = 1, gpp = 0.000130291177917
+orb_index = 2, gpp = 0.0808896249342
+orb_index = 3, gpp = 0.584170172417
+orb_index = 4, gpp = 0.00897537905889
+orb_index = 5, gpp = 0.00915908762254
+orb_index = 6, gpp = 0.409603347446
+W = -1.96, lomega_A0 =  1.09294952687
+orb_index = 0, gpp = 3.11078780017e-05
+orb_index = 1, gpp = 0.000125087621477
+orb_index = 2, gpp = 0.0623430326229
+orb_index = 3, gpp = 0.0746074000989
+orb_index = 4, gpp = 0.00876541065862
+orb_index = 5, gpp = 0.00891700931728
+orb_index = 6, gpp = 0.0583158528991
+W = -1.93, lomega_A0 =  0.213104901096
+orb_index = 0, gpp = 3.69450490152e-05
+orb_index = 1, gpp = 0.000141019722396
+orb_index = 2, gpp = 0.0935122747926
+orb_index = 3, gpp = 0.0436630657569
+orb_index = 4, gpp = 0.00872882613102
+orb_index = 5, gpp = 0.00886732958939
+orb_index = 6, gpp = 0.0416667479058
+W = -1.91, lomega_A0 =  0.196616208947
+orb_index = 0, gpp = 5.50457406507e-05
+orb_index = 1, gpp = 0.000202398612451
+orb_index = 2, gpp = 0.1954043023
+orb_index = 3, gpp = 0.0466882902408
+orb_index = 4, gpp = 0.00880359356167
+orb_index = 5, gpp = 0.0089319168057
+orb_index = 6, gpp = 0.0603708966511
+W = -1.88, lomega_A0 =  0.320456443912
+orb_index = 0, gpp = 2.94044530885e-05
+orb_index = 1, gpp = 0.000136275305417
+orb_index = 2, gpp = 0.0772672572688
+orb_index = 3, gpp = 0.0900662068309
+orb_index = 4, gpp = 0.0090209679041
+orb_index = 5, gpp = 0.00914925777681
+orb_index = 6, gpp = 0.0754738154231
+W = -1.85, lomega_A0 =  0.261143184962
+orb_index = 0, gpp = 2.87961408818e-05
+orb_index = 1, gpp = 0.0001495278781
+orb_index = 2, gpp = 0.115655213586
+orb_index = 3, gpp = 0.224752987513
+orb_index = 4, gpp = 0.00938325409445
+orb_index = 5, gpp = 0.00952278378284
+orb_index = 6, gpp = 0.181724387592
+W = -1.82, lomega_A0 =  0.541216950588
+orb_index = 0, gpp = 2.89139210559e-05
+orb_index = 1, gpp = 0.000121693500837
+orb_index = 2, gpp = 0.50926900824
+orb_index = 3, gpp = 0.941209284671
+orb_index = 4, gpp = 0.00991358453839
+orb_index = 5, gpp = 0.0100806676489
+orb_index = 6, gpp = 0.267779275615
+W = -1.79, lomega_A0 =  1.73840242814
+orb_index = 0, gpp = 2.91298478315e-05
+orb_index = 1, gpp = 0.000114307689257
+orb_index = 2, gpp = 0.152293623104
+orb_index = 3, gpp = 0.173059898436
+orb_index = 4, gpp = 0.0106670432984
+orb_index = 5, gpp = 0.0108915320199
+orb_index = 6, gpp = 0.460180560367
+W = -1.76, lomega_A0 =  0.807236094763
+orb_index = 0, gpp = 2.90641370283e-05
+orb_index = 1, gpp = 0.000111996127498
+orb_index = 2, gpp = 0.173159893195
+orb_index = 3, gpp = 0.0917203860341
+orb_index = 4, gpp = 0.0117619937344
+orb_index = 5, gpp = 0.012111706826
+orb_index = 6, gpp = 0.461895699914
+W = -1.73, lomega_A0 =  0.750790739968
+orb_index = 0, gpp = 2.77801904002e-05
+orb_index = 1, gpp = 0.000115442616724
+orb_index = 2, gpp = 0.517919568193
+orb_index = 3, gpp = 0.0514205686696
+orb_index = 4, gpp = 0.0134755531975
+orb_index = 5, gpp = 0.014148594018
+orb_index = 6, gpp = 0.418234934074
+W = -1.7, lomega_A0 =  1.01534244096
+orb_index = 0, gpp = 2.83896357023e-05
+orb_index = 1, gpp = 0.000119228889945
+orb_index = 2, gpp = 0.318730208004
+orb_index = 3, gpp = 0.0395503964029
+orb_index = 4, gpp = 0.0166425824352
+orb_index = 5, gpp = 0.0184865374462
+orb_index = 6, gpp = 0.173138744177
+W = -1.67, lomega_A0 =  0.566696086991
+orb_index = 0, gpp = 3.13594782026e-05
+orb_index = 1, gpp = 0.000177891062388
+orb_index = 2, gpp = 0.324261846771
+orb_index = 3, gpp = 0.0267394946309
+orb_index = 4, gpp = 0.0262306839705
+orb_index = 5, gpp = 0.0371390352661
+orb_index = 6, gpp = 0.123301514289
+W = -1.64, lomega_A0 =  0.537881825469
+orb_index = 0, gpp = 2.89295667322e-05
+orb_index = 1, gpp = 0.000112295939915
+orb_index = 2, gpp = 0.490615673538
+orb_index = 3, gpp = 0.026125349638
+orb_index = 4, gpp = 0.0459742746831
+orb_index = 5, gpp = 0.0870488756191
+orb_index = 6, gpp = 0.172684853521
+W = -1.61, lomega_A0 =  0.822590252506
+orb_index = 0, gpp = 2.96664745871e-05
+orb_index = 1, gpp = 0.000111339335663
+orb_index = 2, gpp = 0.627220274758
+orb_index = 3, gpp = 0.0289714259649
+orb_index = 4, gpp = 0.065232465292
+orb_index = 5, gpp = 0.0566813901486
+orb_index = 6, gpp = 0.0482753131744
+W = -1.58, lomega_A0 =  0.826521875148
+orb_index = 0, gpp = 3.1051158934e-05
+orb_index = 1, gpp = 0.000113632301711
+orb_index = 2, gpp = 1.4111627096
+orb_index = 3, gpp = 0.039752018185
+orb_index = 4, gpp = 0.490525755528
+orb_index = 5, gpp = 0.221431908635
+orb_index = 6, gpp = 0.0483279136325
+W = -1.55, lomega_A0 =  2.21134498904
+orb_index = 0, gpp = 4.28240266336e-05
+orb_index = 1, gpp = 0.000138987049167
+orb_index = 2, gpp = 6.8838190267
+orb_index = 3, gpp = 0.107245972796
+orb_index = 4, gpp = 0.187904870775
+orb_index = 5, gpp = 0.488542037216
+orb_index = 6, gpp = 0.131256068803
+W = -1.52, lomega_A0 =  7.79894978736
+orb_index = 0, gpp = 5.74096835125e-05
+orb_index = 1, gpp = 0.000237084645392
+orb_index = 2, gpp = 17.5834372261
+orb_index = 3, gpp = 0.372848199505
+orb_index = 4, gpp = 0.0706956692409
+orb_index = 5, gpp = 0.0719733662817
+orb_index = 6, gpp = 0.513227304288
+W = -1.49, lomega_A0 =  18.6124762597
+orb_index = 0, gpp = 3.13570051427e-05
+orb_index = 1, gpp = 0.000118102221113
+orb_index = 2, gpp = 2.33017504573
+orb_index = 3, gpp = 0.0573837044172
+orb_index = 4, gpp = 0.243851901882
+orb_index = 5, gpp = 0.0369652814402
+orb_index = 6, gpp = 0.0664603978175
+W = -1.46, lomega_A0 =  2.73498579051
+orb_index = 0, gpp = 2.8969472568e-05
+orb_index = 1, gpp = 0.000108188535938
+orb_index = 2, gpp = 1.24377190477
+orb_index = 3, gpp = 0.038319923023
+orb_index = 4, gpp = 0.0722400995878
+orb_index = 5, gpp = 0.0305736073678
+orb_index = 6, gpp = 0.0339849291495
+W = -1.43, lomega_A0 =  1.41902762191
+orb_index = 0, gpp = 2.85222588997e-05
+orb_index = 1, gpp = 0.000105399355837
+orb_index = 2, gpp = 1.52987017009
+orb_index = 3, gpp = 0.0415923264722
+orb_index = 4, gpp = 0.031306281825
+orb_index = 5, gpp = 0.0391522632092
+orb_index = 6, gpp = 0.02771395916
+W = -1.4, lomega_A0 =  1.66976892237
+orb_index = 0, gpp = 2.93832130989e-05
+orb_index = 1, gpp = 0.000104624955804
+orb_index = 2, gpp = 4.08648087314
+orb_index = 3, gpp = 0.0709499905833
+orb_index = 4, gpp = 0.025712204244
+orb_index = 5, gpp = 0.168153376454
+orb_index = 6, gpp = 0.0279996524391
+W = -1.37, lomega_A0 =  4.37943010503
+orb_index = 0, gpp = 4.60164974337e-05
+orb_index = 1, gpp = 0.000114090881958
+orb_index = 2, gpp = 41.2667489245
+orb_index = 3, gpp = 0.469292833662
+orb_index = 4, gpp = 0.0248824293608
+orb_index = 5, gpp = 0.036205572759
+orb_index = 6, gpp = 0.0371204520208
+W = -1.34, lomega_A0 =  41.8344103197
+orb_index = 0, gpp = 3.05722050566e-05
+orb_index = 1, gpp = 0.000103792102238
+orb_index = 2, gpp = 7.31152971673
+orb_index = 3, gpp = 0.115760563801
+orb_index = 4, gpp = 0.0263746681346
+orb_index = 5, gpp = 0.0287386234461
+orb_index = 6, gpp = 0.0444272658407
+W = -1.31, lomega_A0 =  7.52696520226
+orb_index = 0, gpp = 2.79376245357e-05
+orb_index = 1, gpp = 0.000101835365696
+orb_index = 2, gpp = 1.77346598446
+orb_index = 3, gpp = 0.0754485256418
+orb_index = 4, gpp = 0.029913486313
+orb_index = 5, gpp = 0.0304702638616
+orb_index = 6, gpp = 0.0828852837384
+W = -1.28, lomega_A0 =  1.99231331701
+orb_index = 0, gpp = 2.75677289762e-05
+orb_index = 1, gpp = 0.000103637149515
+orb_index = 2, gpp = 0.964634021468
+orb_index = 3, gpp = 0.185899618445
+orb_index = 4, gpp = 0.0376832863482
+orb_index = 5, gpp = 0.0371084405972
+orb_index = 6, gpp = 0.373020920015
+W = -1.25, lomega_A0 =  1.59847749175
+orb_index = 0, gpp = 2.75312547587e-05
+orb_index = 1, gpp = 0.000106151296336
+orb_index = 2, gpp = 0.80297459205
+orb_index = 3, gpp = 0.314523178499
+orb_index = 4, gpp = 0.0625384326216
+orb_index = 5, gpp = 0.0584922122814
+orb_index = 6, gpp = 0.689239772051
+W = -1.22, lomega_A0 =  1.92790187005
+orb_index = 0, gpp = 2.69731796069e-05
+orb_index = 1, gpp = 9.98735958536e-05
+orb_index = 2, gpp = 0.33065470019
+orb_index = 3, gpp = 0.0826424681278
+orb_index = 4, gpp = 0.296592883726
+orb_index = 5, gpp = 0.235651540007
+orb_index = 6, gpp = 0.109122392767
+W = -1.19, lomega_A0 =  1.05479083159
+orb_index = 0, gpp = 2.68015198929e-05
+orb_index = 1, gpp = 9.88014341193e-05
+orb_index = 2, gpp = 0.218605598408
+orb_index = 3, gpp = 0.0662474827226
+orb_index = 4, gpp = 0.194446653692
+orb_index = 5, gpp = 0.229337373822
+orb_index = 6, gpp = 0.0561438779618
+W = -1.16, lomega_A0 =  0.76490658956
+orb_index = 0, gpp = 2.66757509453e-05
+orb_index = 1, gpp = 9.82406255184e-05
+orb_index = 2, gpp = 0.161775352496
+orb_index = 3, gpp = 0.0687965870965
+orb_index = 4, gpp = 0.0655737916649
+orb_index = 5, gpp = 0.06784606037
+orb_index = 6, gpp = 0.0446899769978
+W = -1.13, lomega_A0 =  0.408806685002
+orb_index = 0, gpp = 2.65673796335e-05
+orb_index = 1, gpp = 9.79566925611e-05
+orb_index = 2, gpp = 0.128235722991
+orb_index = 3, gpp = 0.0785635997477
+orb_index = 4, gpp = 0.0532862514338
+orb_index = 5, gpp = 0.0537938257445
+orb_index = 6, gpp = 0.0437282464246
+W = -1.1, lomega_A0 =  0.357732170414
+orb_index = 0, gpp = 2.64711578025e-05
+orb_index = 1, gpp = 9.81183205706e-05
+orb_index = 2, gpp = 0.109153866129
+orb_index = 3, gpp = 0.0960092411663
+orb_index = 4, gpp = 0.0542029203895
+orb_index = 5, gpp = 0.0545329982628
+orb_index = 6, gpp = 0.0491453132438
+W = -1.07, lomega_A0 =  0.363168928669
+orb_index = 0, gpp = 2.63824979198e-05
+orb_index = 1, gpp = 9.95293975481e-05
+orb_index = 2, gpp = 0.105266222638
+orb_index = 3, gpp = 0.129335172363
+orb_index = 4, gpp = 0.0614379266586
+orb_index = 5, gpp = 0.0615146733993
+orb_index = 6, gpp = 0.0652229368372
+W = -1.04, lomega_A0 =  0.422902843792
+orb_index = 0, gpp = 2.63200173681e-05
+orb_index = 1, gpp = 0.000106587712178
+orb_index = 2, gpp = 0.144490809893
+orb_index = 3, gpp = 0.224481055129
+orb_index = 4, gpp = 0.0787809930655
+orb_index = 5, gpp = 0.0787268358545
+orb_index = 6, gpp = 0.124496941964
+W = -1.01, lomega_A0 =  0.651109543636
+orb_index = 0, gpp = 2.65823560142e-05
+orb_index = 1, gpp = 0.000193026638572
+orb_index = 2, gpp = 0.727360004098
+orb_index = 3, gpp = 1.12278136916
+orb_index = 4, gpp = 0.197905509956
+orb_index = 5, gpp = 0.196945362155
+orb_index = 6, gpp = 0.77233073275
+W = -0.98, lomega_A0 =  3.01754258712
+orb_index = 0, gpp = 2.62603223132e-05
+orb_index = 1, gpp = 0.000133350855337
+orb_index = 2, gpp = 0.316921505022
+orb_index = 3, gpp = 0.566049892162
+orb_index = 4, gpp = 0.148477461759
+orb_index = 5, gpp = 0.148315323337
+orb_index = 6, gpp = 0.339433725948
+W = -0.95, lomega_A0 =  1.51935751941
+orb_index = 0, gpp = 2.60571670838e-05
+orb_index = 1, gpp = 0.000100902572395
+orb_index = 2, gpp = 0.0933687783228
+orb_index = 3, gpp = 0.300113112452
+orb_index = 4, gpp = 0.114309068378
+orb_index = 5, gpp = 0.114278679605
+orb_index = 6, gpp = 0.109398670704
+W = -0.92, lomega_A0 =  0.731595269202
+orb_index = 0, gpp = 2.59575736053e-05
+orb_index = 1, gpp = 9.57959601747e-05
+orb_index = 2, gpp = 0.0573282030571
+orb_index = 3, gpp = 0.339940387875
+orb_index = 4, gpp = 0.130841780859
+orb_index = 5, gpp = 0.130832722086
+orb_index = 6, gpp = 0.0835251569132
+W = -0.89, lomega_A0 =  0.742590004324
+orb_index = 0, gpp = 2.5892764463e-05
+orb_index = 1, gpp = 9.3871478589e-05
+orb_index = 2, gpp = 0.0435918143332
+orb_index = 3, gpp = 0.472281172159
+orb_index = 4, gpp = 0.161677113507
+orb_index = 5, gpp = 0.161673862354
+orb_index = 6, gpp = 0.0831127359777
+W = -0.86, lomega_A0 =  0.922456462574
+orb_index = 0, gpp = 2.58275847488e-05
+orb_index = 1, gpp = 9.27333013395e-05
+orb_index = 2, gpp = 0.0361040123027
+orb_index = 3, gpp = 0.748749057395
+orb_index = 4, gpp = 0.208899742116
+orb_index = 5, gpp = 0.20889851252
+orb_index = 6, gpp = 0.0917345285787
+W = -0.83, lomega_A0 =  1.2945044138
+orb_index = 0, gpp = 2.58129129739e-05
+orb_index = 1, gpp = 9.19577637869e-05
+orb_index = 2, gpp = 0.0314073844991
+orb_index = 3, gpp = 1.40251868505
+orb_index = 4, gpp = 0.282561534042
+orb_index = 5, gpp = 0.282561124138
+orb_index = 6, gpp = 0.107056089564
+W = -0.8, lomega_A0 =  2.10622258797
+orb_index = 0, gpp = 2.59609043784e-05
+orb_index = 1, gpp = 9.14909782744e-05
+orb_index = 2, gpp = 0.0290094304275
+orb_index = 3, gpp = 3.5474072733
+orb_index = 4, gpp = 0.404989598602
+orb_index = 5, gpp = 0.404989589515
+orb_index = 6, gpp = 0.130829489157
+W = -0.77, lomega_A0 =  4.51734283288
+orb_index = 0, gpp = 2.75735140405e-05
+orb_index = 1, gpp = 9.25992613225e-05
+orb_index = 2, gpp = 0.0361864775494
+orb_index = 3, gpp = 19.3075703076
+orb_index = 4, gpp = 0.629735045949
+orb_index = 5, gpp = 0.629735339856
+orb_index = 6, gpp = 0.176852363568
+W = -0.74, lomega_A0 =  20.7801997073
+orb_index = 0, gpp = 3.48041129438e-05
+orb_index = 1, gpp = 9.96511780845e-05
+orb_index = 2, gpp = 0.0781517567315
+orb_index = 3, gpp = 87.1403982699
+orb_index = 4, gpp = 0.90281679853
+orb_index = 5, gpp = 0.90281736718
+orb_index = 6, gpp = 0.267783841319
+W = -0.72, lomega_A0 =  89.292102489
+orb_index = 0, gpp = 2.62492654512e-05
+orb_index = 1, gpp = 9.04646856169e-05
+orb_index = 2, gpp = 0.0253160450926
+orb_index = 3, gpp = 8.26480570588
+orb_index = 4, gpp = 1.81935773616
+orb_index = 5, gpp = 1.81935927713
+orb_index = 6, gpp = 0.258477472615
+W = -0.69, lomega_A0 =  12.1874329508
+orb_index = 0, gpp = 2.55299492321e-05
+orb_index = 1, gpp = 8.93259477345e-05
+orb_index = 2, gpp = 0.0197033183028
+orb_index = 3, gpp = 2.30324746994
+orb_index = 4, gpp = 5.32816097035
+orb_index = 5, gpp = 5.32816757295
+orb_index = 6, gpp = 0.354586053748
+W = -0.66, lomega_A0 =  13.3339802412
+orb_index = 0, gpp = 2.53721810579e-05
+orb_index = 1, gpp = 8.89315810107e-05
+orb_index = 2, gpp = 0.0180412269778
+orb_index = 3, gpp = 1.32318101439
+orb_index = 4, gpp = 17.9912860746
+orb_index = 5, gpp = 17.9913200006
+orb_index = 6, gpp = 0.46079068347
+W = -0.64, lomega_A0 =  37.7847333038
+orb_index = 0, gpp = 2.5228066227e-05
+orb_index = 1, gpp = 8.85302201081e-05
+orb_index = 2, gpp = 0.0163041737472
+orb_index = 3, gpp = 0.710861972044
+orb_index = 4, gpp = 46.6800461598
+orb_index = 5, gpp = 46.6799650689
+orb_index = 6, gpp = 0.743605443834
+W = -0.61, lomega_A0 =  94.8308965766
+orb_index = 0, gpp = 2.51214563071e-05
+orb_index = 1, gpp = 8.84369428673e-05
+orb_index = 2, gpp = 0.0150455521035
+orb_index = 3, gpp = 0.442602566354
+orb_index = 4, gpp = 5.43264272761
+orb_index = 5, gpp = 5.43263913015
+orb_index = 6, gpp = 1.40099574797
+W = -0.58, lomega_A0 =  12.7240392826
+orb_index = 0, gpp = 2.50292032461e-05
+orb_index = 1, gpp = 8.93944232038e-05
+orb_index = 2, gpp = 0.0143294177579
+orb_index = 3, gpp = 0.301841534354
+orb_index = 4, gpp = 1.84015724882
+orb_index = 5, gpp = 1.84015669993
+orb_index = 6, gpp = 3.54172478964
+W = -0.55, lomega_A0 =  7.53832411412
+orb_index = 0, gpp = 2.49449216101e-05
+orb_index = 1, gpp = 9.96569704482e-05
+orb_index = 2, gpp = 0.0166114640908
+orb_index = 3, gpp = 0.218851285639
+orb_index = 4, gpp = 0.909656938102
+orb_index = 5, gpp = 0.909656790023
+orb_index = 6, gpp = 19.0946077405
+W = -0.52, lomega_A0 =  21.1495088202
+orb_index = 0, gpp = 2.48649217742e-05
+orb_index = 1, gpp = 0.000114206054357
+orb_index = 2, gpp = 0.0203228302604
+orb_index = 3, gpp = 0.165815876251
+orb_index = 4, gpp = 0.540105673071
+orb_index = 5, gpp = 0.540105616668
+orb_index = 6, gpp = 40.8211116453
+W = -0.49, lomega_A0 =  42.0876007125
+orb_index = 0, gpp = 2.47820660075e-05
+orb_index = 1, gpp = 8.8922029566e-05
+orb_index = 2, gpp = 0.0119605476615
+orb_index = 3, gpp = 0.130330630964
+orb_index = 4, gpp = 0.357182177752
+orb_index = 5, gpp = 0.357182150519
+orb_index = 6, gpp = 5.02992978948
+W = -0.46, lomega_A0 =  5.88669900047
+orb_index = 0, gpp = 2.47038600038e-05
+orb_index = 1, gpp = 8.61583406154e-05
+orb_index = 2, gpp = 0.010559205619
+orb_index = 3, gpp = 0.10502779853
+orb_index = 4, gpp = 0.25357249488
+orb_index = 5, gpp = 0.253572480693
+orb_index = 6, gpp = 1.73886598498
+W = -0.43, lomega_A0 =  2.3617088269
+orb_index = 0, gpp = 2.46272124538e-05
+orb_index = 1, gpp = 8.50779707772e-05
+orb_index = 2, gpp = 0.0097400913838
+orb_index = 3, gpp = 0.086444690759
+orb_index = 4, gpp = 0.189283980571
+orb_index = 5, gpp = 0.18928397499
+orb_index = 6, gpp = 0.867350429683
+W = -0.4, lomega_A0 =  1.34221287257
+orb_index = 0, gpp = 2.4551828865e-05
+orb_index = 1, gpp = 8.43666611081e-05
+orb_index = 2, gpp = 0.00909173979479
+orb_index = 3, gpp = 0.0724003788939
+orb_index = 4, gpp = 0.146677605357
+orb_index = 5, gpp = 0.146677607361
+orb_index = 6, gpp = 0.517633830967
+W = -0.37, lomega_A0 =  0.892590080864
+orb_index = 0, gpp = 2.44777886475e-05
+orb_index = 1, gpp = 8.37860212049e-05
+orb_index = 2, gpp = 0.00853294562539
+orb_index = 3, gpp = 0.0615284577666
+orb_index = 4, gpp = 0.116997621154
+orb_index = 5, gpp = 0.116997630753
+orb_index = 6, gpp = 0.343484540617
+W = -0.34, lomega_A0 =  0.647649459726
+orb_index = 0, gpp = 2.44056674422e-05
+orb_index = 1, gpp = 8.3271027075e-05
+orb_index = 2, gpp = 0.00803594864001
+orb_index = 3, gpp = 0.0529401484516
+orb_index = 4, gpp = 0.0954989625931
+orb_index = 5, gpp = 0.0954989800608
+orb_index = 6, gpp = 0.244451778649
+W = -0.31, lomega_A0 =  0.496533495089
+orb_index = 0, gpp = 2.43377854381e-05
+orb_index = 1, gpp = 8.28128486477e-05
+orb_index = 2, gpp = 0.0075874724325
+orb_index = 3, gpp = 0.0460374344339
+orb_index = 4, gpp = 0.0794293134783
+orb_index = 5, gpp = 0.0794293390921
+orb_index = 6, gpp = 0.182827454984
+W = -0.28, lomega_A0 =  0.395418165055
+orb_index = 0, gpp = 2.42892328427e-05
+orb_index = 1, gpp = 8.25176323184e-05
+orb_index = 2, gpp = 0.00718076297363
+orb_index = 3, gpp = 0.0404060829837
+orb_index = 4, gpp = 0.0671032961905
+orb_index = 5, gpp = 0.0671033301513
+orb_index = 6, gpp = 0.141897716598
+W = -0.25, lomega_A0 =  0.323797995763
+orb_index = 0, gpp = 2.42923294311e-05
+orb_index = 1, gpp = 8.28471525916e-05
+orb_index = 2, gpp = 0.00682289882003
+orb_index = 3, gpp = 0.0357525967846
+orb_index = 4, gpp = 0.0574421298528
+orb_index = 5, gpp = 0.0574421722677
+orb_index = 6, gpp = 0.113336111437
+W = -0.22, lomega_A0 =  0.270903048644
+orb_index = 0, gpp = 2.4096508729e-05
+orb_index = 1, gpp = 8.12991195928e-05
+orb_index = 2, gpp = 0.00646145632156
+orb_index = 3, gpp = 0.0318600297494
+orb_index = 4, gpp = 0.0497293540937
+orb_index = 5, gpp = 0.049729404982
+orb_index = 6, gpp = 0.0926181829827
+W = -0.19, lomega_A0 =  0.230503823758
+orb_index = 0, gpp = 2.40229718016e-05
+orb_index = 1, gpp = 8.08110680031e-05
+orb_index = 2, gpp = 0.00614259461572
+orb_index = 3, gpp = 0.0285731883746
+orb_index = 4, gpp = 0.0434740511221
+orb_index = 5, gpp = 0.0434741104284
+orb_index = 6, gpp = 0.0771131177634
+W = -0.16, lomega_A0 =  0.198881896344
+orb_index = 0, gpp = 2.39520635102e-05
+orb_index = 1, gpp = 8.03634572055e-05
+orb_index = 2, gpp = 0.00584840060762
+orb_index = 3, gpp = 0.0257718740521
+orb_index = 4, gpp = 0.0383307197894
+orb_index = 5, gpp = 0.0383307873979
+orb_index = 6, gpp = 0.0652075851692
+W = -0.13, lomega_A0 =  0.173593682537
+orb_index = 0, gpp = 2.38813378097e-05
+orb_index = 1, gpp = 7.99241445076e-05
+orb_index = 2, gpp = 0.00557563945885
+orb_index = 3, gpp = 0.0233647928854
+orb_index = 4, gpp = 0.0340504920716
+orb_index = 5, gpp = 0.034050567819
+orb_index = 6, gpp = 0.0558672638004
+W = -0.1, lomega_A0 =  0.153012561517
+orb_index = 0, gpp = 2.38107559513e-05
+orb_index = 1, gpp = 7.94897417165e-05
+orb_index = 2, gpp = 0.00532208737415
+orb_index = 3, gpp = 0.0212811796556
+orb_index = 4, gpp = 0.0304504262673
+orb_index = 5, gpp = 0.0304505099543
+orb_index = 6, gpp = 0.0484043517992
+W = -0.07, lomega_A0 =  0.136011855548
+orb_index = 0, gpp = 2.37403824895e-05
+orb_index = 1, gpp = 7.9059560669e-05
+orb_index = 2, gpp = 0.00508588643904
+orb_index = 3, gpp = 0.0194654770118
+orb_index = 4, gpp = 0.0273936086233
+orb_index = 5, gpp = 0.027393700024
+orb_index = 6, gpp = 0.0423470542647
+W = -0.04, lomega_A0 =  0.121788526306
+orb_index = 0, gpp = 2.36702630983e-05
+orb_index = 1, gpp = 7.86333596219e-05
+orb_index = 2, gpp = 0.00486542736014
+orb_index = 3, gpp = 0.0178735721998
+orb_index = 4, gpp = 0.0247759246762
+orb_index = 5, gpp = 0.0247760235455
+orb_index = 6, gpp = 0.0373630111471
+W = -0.01, lomega_A0 =  0.109756262551
+ orb_index = 0, gpp = 2.7641e-05
+orb_index = 1, gpp = 0.000126811
+orb_index = 2, gpp = 0.0533429
+orb_index = 3, gpp = 0.134039
+orb_index = 4, gpp = 0.00924441
+orb_index = 5, gpp = 0.00946114
+orb_index = 6, gpp = 0.0960173
+W = -1.98, lomega_A0 =  0.302258866555
+orb_index = 0, gpp = 2.48828740483e-05
+orb_index = 1, gpp = 0.000129454429924
+orb_index = 2, gpp = 0.0643381990585
+orb_index = 3, gpp = 0.315267988893
+orb_index = 4, gpp = 0.00909503115505
+orb_index = 5, gpp = 0.00929382503624
+orb_index = 6, gpp = 0.222001673363
+W = -1.97, lomega_A0 =  0.62015105481
+orb_index = 0, gpp = 2.95627698498e-05
+orb_index = 1, gpp = 0.000123229598285
+orb_index = 2, gpp = 0.0598004956797
+orb_index = 3, gpp = 0.130383273513
+orb_index = 4, gpp = 0.00881296355637
+orb_index = 5, gpp = 0.00897338560547
+orb_index = 6, gpp = 0.0962204360066
+W = -1.94, lomega_A0 =  0.30434334673
+orb_index = 0, gpp = 4.78561150983e-05
+orb_index = 1, gpp = 0.000173873078265
+orb_index = 2, gpp = 0.153933056371
+orb_index = 3, gpp = 0.0424345609033
+orb_index = 4, gpp = 0.00873729804225
+orb_index = 5, gpp = 0.00887123698421
+orb_index = 6, gpp = 0.0499035329969
+W = -1.9, lomega_A0 =  0.264101414491
+orb_index = 0, gpp = 3.79728451804e-05
+orb_index = 1, gpp = 0.000151736686366
+orb_index = 2, gpp = 0.108328851397
+orb_index = 3, gpp = 0.0486559099642
+orb_index = 4, gpp = 0.00886046899702
+orb_index = 5, gpp = 0.00898765736506
+orb_index = 6, gpp = 0.0485571006504
+W = -1.87, lomega_A0 =  0.223579697906
+orb_index = 0, gpp = 2.69832309069e-05
+orb_index = 1, gpp = 0.000150957974499
+orb_index = 2, gpp = 0.0796621986378
+orb_index = 3, gpp = 0.17010290303
+orb_index = 4, gpp = 0.00912497277167
+orb_index = 5, gpp = 0.00925561108063
+orb_index = 6, gpp = 0.142623848044
+W = -1.84, lomega_A0 =  0.410947474769
+orb_index = 0, gpp = 2.95820789238e-05
+orb_index = 1, gpp = 0.000128356670709
+orb_index = 2, gpp = 0.154277449204
+orb_index = 3, gpp = 0.222072011744
+orb_index = 4, gpp = 0.00953947194668
+orb_index = 5, gpp = 0.00968595508697
+orb_index = 6, gpp = 0.129986309656
+W = -1.81, lomega_A0 =  0.525719136387
+orb_index = 0, gpp = 2.85892219582e-05
+orb_index = 1, gpp = 0.000119105116152
+orb_index = 2, gpp = 0.371833491488
+orb_index = 3, gpp = 0.663494202213
+orb_index = 4, gpp = 0.0101358862439
+orb_index = 5, gpp = 0.0103176868475
+orb_index = 6, gpp = 0.241652738265
+W = -1.78, lomega_A0 =  1.29758169939
+orb_index = 0, gpp = 3.00723259537e-05
+orb_index = 1, gpp = 0.00011211984402
+orb_index = 2, gpp = 0.159129831896
+orb_index = 3, gpp = 0.19537658021
+orb_index = 4, gpp = 0.0109852395763
+orb_index = 5, gpp = 0.0112406554239
+orb_index = 6, gpp = 1.13050902359
+W = -1.75, lomega_A0 =  1.50738352287
+orb_index = 0, gpp = 2.86135990418e-05
+orb_index = 1, gpp = 0.000112623340416
+orb_index = 2, gpp = 0.20097571387
+orb_index = 3, gpp = 0.0590037862822
+orb_index = 4, gpp = 0.0122421661712
+orb_index = 5, gpp = 0.0126651120795
+orb_index = 6, gpp = 0.266024219452
+W = -1.72, lomega_A0 =  0.551052234795
+orb_index = 0, gpp = 2.7258152629e-05
+orb_index = 1, gpp = 0.000118851593704
+orb_index = 2, gpp = 0.876179456299
+orb_index = 3, gpp = 0.0754987662556
+orb_index = 4, gpp = 0.0142913749489
+orb_index = 5, gpp = 0.0151867730947
+orb_index = 6, gpp = 0.708221959288
+W = -1.69, lomega_A0 =  1.68952443963
+orb_index = 0, gpp = 2.87534980613e-05
+orb_index = 1, gpp = 0.000125735039287
+orb_index = 2, gpp = 0.27329124423
+orb_index = 3, gpp = 0.0324330787166
+orb_index = 4, gpp = 0.0184808492114
+orb_index = 5, gpp = 0.0214264621191
+orb_index = 6, gpp = 0.114337976899
+W = -1.66, lomega_A0 =  0.460124099713
+orb_index = 0, gpp = 2.73352706408e-05
+orb_index = 1, gpp = 0.000131245628292
+orb_index = 2, gpp = 0.440417680943
+orb_index = 3, gpp = 0.0235660763979
+orb_index = 4, gpp = 0.0372809608152
+orb_index = 5, gpp = 0.0653739212879
+orb_index = 6, gpp = 0.216241416298
+W = -1.63, lomega_A0 =  0.783038636642
+orb_index = 0, gpp = 2.95647202498e-05
+orb_index = 1, gpp = 0.000111729958377
+orb_index = 2, gpp = 0.52667758806
+orb_index = 3, gpp = 0.0276810840269
+orb_index = 4, gpp = 0.0477974913669
+orb_index = 5, gpp = 0.0499058680148
+orb_index = 6, gpp = 0.0595555559999
+W = -1.59, lomega_A0 =  0.711758882147
+orb_index = 0, gpp = 3.03007186371e-05
+orb_index = 1, gpp = 0.000112104662221
+orb_index = 2, gpp = 1.02154445177
+orb_index = 3, gpp = 0.034375761082
+orb_index = 4, gpp = 0.199053178524
+orb_index = 5, gpp = 0.116742420632
+orb_index = 6, gpp = 0.0441887977935
+W = -1.56, lomega_A0 =  1.41604701518
+orb_index = 0, gpp = 3.5437102745e-05
+orb_index = 1, gpp = 0.000123242302968
+orb_index = 2, gpp = 3.49764769573
+orb_index = 3, gpp = 0.0668855272592
+orb_index = 4, gpp = 0.408688467453
+orb_index = 5, gpp = 0.971218696567
+orb_index = 6, gpp = 0.079961323754
+W = -1.53, lomega_A0 =  5.02456039017
+orb_index = 0, gpp = 6.47608775431e-05
+orb_index = 1, gpp = 0.000185134141998
+orb_index = 2, gpp = 16.9038727334
+orb_index = 3, gpp = 0.220669255641
+orb_index = 4, gpp = 0.108962526799
+orb_index = 5, gpp = 0.20575699116
+orb_index = 6, gpp = 0.27870665812
+W = -1.51, lomega_A0 =  17.7182180602
+orb_index = 0, gpp = 3.9881582623e-05
+orb_index = 1, gpp = 0.000155849346786
+orb_index = 2, gpp = 7.17704061511
+orb_index = 3, gpp = 0.153619994451
+orb_index = 4, gpp = 0.0781102804708
+orb_index = 5, gpp = 0.0528661592869
+orb_index = 6, gpp = 0.205184337032
+W = -1.48, lomega_A0 =  7.66701711728
+orb_index = 0, gpp = 3.00990342717e-05
+orb_index = 1, gpp = 0.000112936223159
+orb_index = 2, gpp = 1.6926298252
+orb_index = 3, gpp = 0.0460065663609
+orb_index = 4, gpp = 0.335956240913
+orb_index = 5, gpp = 0.0345150222042
+orb_index = 6, gpp = 0.0487728282936
+W = -1.45, lomega_A0 =  2.15802351823
+orb_index = 0, gpp = 2.87113858794e-05
+orb_index = 1, gpp = 0.000106944054556
+orb_index = 2, gpp = 1.22666684041
+orb_index = 3, gpp = 0.0378830939637
+orb_index = 4, gpp = 0.0473870660074
+orb_index = 5, gpp = 0.0309219790048
+orb_index = 6, gpp = 0.0307381352769
+W = -1.42, lomega_A0 =  1.37373277011
+orb_index = 0, gpp = 2.8588211482e-05
+orb_index = 1, gpp = 0.000104930878203
+orb_index = 2, gpp = 1.92973724543
+orb_index = 3, gpp = 0.0464063458804
+orb_index = 4, gpp = 0.0283405499606
+orb_index = 5, gpp = 0.0548359780366
+orb_index = 6, gpp = 0.0272746660647
+W = -1.39, lomega_A0 =  2.08672830447
+orb_index = 0, gpp = 3.0743998767e-05
+orb_index = 1, gpp = 0.000105144621731
+orb_index = 2, gpp = 7.26267924328
+orb_index = 3, gpp = 0.105751129701
+orb_index = 4, gpp = 0.0250291119292
+orb_index = 5, gpp = 0.0879628755964
+orb_index = 6, gpp = 0.0292956076399
+W = -1.36, lomega_A0 =  7.51085385677
+orb_index = 0, gpp = 3.4664769314e-05
+orb_index = 1, gpp = 0.000106531471526
+orb_index = 2, gpp = 16.2280136318
+orb_index = 3, gpp = 0.207350047307
+orb_index = 4, gpp = 0.0256792349357
+orb_index = 5, gpp = 0.0294062378793
+orb_index = 6, gpp = 0.0403128803151
+W = -1.32, lomega_A0 =  16.5309032285
+orb_index = 0, gpp = 2.90418189807e-05
+orb_index = 1, gpp = 0.000102678718116
+orb_index = 2, gpp = 4.03888909723
+orb_index = 3, gpp = 0.0850404393796
+orb_index = 4, gpp = 0.0272834949013
+orb_index = 5, gpp = 0.0288158034449
+orb_index = 6, gpp = 0.051747663643
+W = -1.3, lomega_A0 =  4.23190821914
+orb_index = 0, gpp = 2.77068909914e-05
+orb_index = 1, gpp = 0.000101800240395
+orb_index = 2, gpp = 1.32485377225
+orb_index = 3, gpp = 0.0857625735289
+orb_index = 4, gpp = 0.0318041508316
+orb_index = 5, gpp = 0.0320059981611
+orb_index = 6, gpp = 0.118061793961
+W = -1.27, lomega_A0 =  1.59261779586
+orb_index = 0, gpp = 2.78303995792e-05
+orb_index = 1, gpp = 0.000108712644446
+orb_index = 2, gpp = 1.12791829799
+orb_index = 3, gpp = 0.409824980423
+orb_index = 4, gpp = 0.0425460825543
+orb_index = 5, gpp = 0.041374582008
+orb_index = 6, gpp = 0.926702650389
+W = -1.24, lomega_A0 =  2.54850313641
+orb_index = 0, gpp = 2.72085836277e-05
+orb_index = 1, gpp = 0.000102139916509
+orb_index = 2, gpp = 0.524498352433
+orb_index = 3, gpp = 0.15708626604
+orb_index = 4, gpp = 0.0864330952098
+orb_index = 5, gpp = 0.0781054423395
+orb_index = 6, gpp = 0.298587292917
+W = -1.21, lomega_A0 =  1.14483979744
+orb_index = 0, gpp = 2.69062075134e-05
+orb_index = 1, gpp = 9.94045313217e-05
+orb_index = 2, gpp = 0.282449827308
+orb_index = 3, gpp = 0.0727508202662
+orb_index = 4, gpp = 0.665599758044
+orb_index = 5, gpp = 0.564086671421
+orb_index = 6, gpp = 0.0810605069422
+W = -1.18, lomega_A0 =  1.66607389472
+orb_index = 0, gpp = 2.675679731e-05
+orb_index = 1, gpp = 9.85819358793e-05
+orb_index = 2, gpp = 0.195984688606
+orb_index = 3, gpp = 0.0660514396879
+orb_index = 4, gpp = 0.111603910323
+orb_index = 5, gpp = 0.123153452851
+orb_index = 6, gpp = 0.0503907298559
+W = -1.15, lomega_A0 =  0.547309560057
+orb_index = 0, gpp = 2.66381896098e-05
+orb_index = 1, gpp = 9.81131989652e-05
+orb_index = 2, gpp = 0.148662908845
+orb_index = 3, gpp = 0.0713436606279
+orb_index = 4, gpp = 0.0584581069271
+orb_index = 5, gpp = 0.0596780111938
+orb_index = 6, gpp = 0.0435995654814
+W = -1.12, lomega_A0 =  0.381867004464
+orb_index = 0, gpp = 2.65338516221e-05
+orb_index = 1, gpp = 9.7942282094e-05
+orb_index = 2, gpp = 0.120434249795
+orb_index = 3, gpp = 0.0833418380784
+orb_index = 4, gpp = 0.0527294154589
+orb_index = 5, gpp = 0.0533500914696
+orb_index = 6, gpp = 0.04479715757
+W = -1.09, lomega_A0 =  0.354777228506
+orb_index = 0, gpp = 2.6443798405e-05
+orb_index = 1, gpp = 9.83784135724e-05
+orb_index = 2, gpp = 0.105786926067
+orb_index = 3, gpp = 0.104530062536
+orb_index = 4, gpp = 0.0560136847697
+orb_index = 5, gpp = 0.0562128555995
+orb_index = 6, gpp = 0.0527803793924
+W = -1.06, lomega_A0 =  0.375448730576
+orb_index = 0, gpp = 2.63559829416e-05
+orb_index = 1, gpp = 0.000100710914587
+orb_index = 2, gpp = 0.109979279734
+orb_index = 3, gpp = 0.148712357092
+orb_index = 4, gpp = 0.0654067832282
+orb_index = 5, gpp = 0.0654437560151
+orb_index = 6, gpp = 0.0762173365981
+W = -1.03, lomega_A0 =  0.465886579564
+orb_index = 0, gpp = 2.63228680851e-05
+orb_index = 1, gpp = 0.000114516201541
+orb_index = 2, gpp = 0.196239001255
+orb_index = 3, gpp = 0.313505913643
+orb_index = 4, gpp = 0.0923058518632
+orb_index = 5, gpp = 0.0921634234351
+orb_index = 6, gpp = 0.185733342177
+W = -1, lomega_A0 =  0.880088371443
+orb_index = 0, gpp = 2.69528467067e-05
+orb_index = 1, gpp = 0.000291612273164
+orb_index = 2, gpp = 1.39742058355
+orb_index = 3, gpp = 2.12415221964
+orb_index = 4, gpp = 0.356013114867
+orb_index = 5, gpp = 0.354383773869
+orb_index = 6, gpp = 1.50489780797
+W = -0.97, lomega_A0 =  5.73718606502
+orb_index = 0, gpp = 2.61533023792e-05
+orb_index = 1, gpp = 0.000113409951007
+orb_index = 2, gpp = 0.180135363241
+orb_index = 3, gpp = 0.383478844617
+orb_index = 4, gpp = 0.121432117446
+orb_index = 5, gpp = 0.121346776363
+orb_index = 6, gpp = 0.195096186019
+W = -0.94, lomega_A0 =  1.00162885094
+orb_index = 0, gpp = 2.6020094114e-05
+orb_index = 1, gpp = 9.84601746127e-05
+orb_index = 2, gpp = 0.0762030405046
+orb_index = 3, gpp = 0.301497538364
+orb_index = 4, gpp = 0.117851207273
+orb_index = 5, gpp = 0.117831551623
+orb_index = 6, gpp = 0.0950938776365
+W = -0.91, lomega_A0 =  0.708601695669
+orb_index = 0, gpp = 2.59313178554e-05
+orb_index = 1, gpp = 9.49898055903e-05
+orb_index = 2, gpp = 0.0515887752571
+orb_index = 3, gpp = 0.373417896559
+orb_index = 4, gpp = 0.139615860903
+orb_index = 5, gpp = 0.139609506266
+orb_index = 6, gpp = 0.081945211574
+W = -0.88, lomega_A0 =  0.786298171683
+orb_index = 0, gpp = 2.58685484083e-05
+orb_index = 1, gpp = 9.34371192826e-05
+orb_index = 2, gpp = 0.0406641305274
+orb_index = 3, gpp = 0.542542272985
+orb_index = 4, gpp = 0.175263940911
+orb_index = 5, gpp = 0.175261589689
+orb_index = 6, gpp = 0.0852087795502
+W = -0.85, lomega_A0 =  1.01906001933
+orb_index = 0, gpp = 2.58153404863e-05
+orb_index = 1, gpp = 9.24446621881e-05
+orb_index = 2, gpp = 0.0342967524013
+orb_index = 3, gpp = 0.902558142578
+orb_index = 4, gpp = 0.229760951168
+orb_index = 5, gpp = 0.229760073019
+orb_index = 6, gpp = 0.0960836905517
+W = -0.82, lomega_A0 =  1.49257786972
+orb_index = 0, gpp = 2.58308508504e-05
+orb_index = 1, gpp = 9.17585168056e-05
+orb_index = 2, gpp = 0.0303060303282
+orb_index = 3, gpp = 1.82707620899
+orb_index = 4, gpp = 0.31626189136
+orb_index = 5, gpp = 0.316261641425
+orb_index = 6, gpp = 0.113834450035
+W = -0.79, lomega_A0 =  2.6038578115
+orb_index = 0, gpp = 2.61408738405e-05
+orb_index = 1, gpp = 9.1488260427e-05
+orb_index = 2, gpp = 0.0291883546816
+orb_index = 3, gpp = 5.47480425674
+orb_index = 4, gpp = 0.464209697688
+orb_index = 5, gpp = 0.464209788927
+orb_index = 6, gpp = 0.141845880258
+W = -0.76, lomega_A0 =  6.57437560743
+orb_index = 0, gpp = 3.07643941232e-05
+orb_index = 1, gpp = 9.5689844447e-05
+orb_index = 2, gpp = 0.0545910056312
+orb_index = 3, gpp = 49.2568247681
+orb_index = 4, gpp = 0.747932906338
+orb_index = 5, gpp = 0.747933321805
+orb_index = 6, gpp = 0.217722483135
+W = -0.73, lomega_A0 =  51.0251309393
+orb_index = 0, gpp = 2.71249846475e-05
+orb_index = 1, gpp = 9.150459785e-05
+orb_index = 2, gpp = 0.0310650181321
+orb_index = 3, gpp = 16.172738412
+orb_index = 4, gpp = 1.40074366074
+orb_index = 5, gpp = 1.40074473717
+orb_index = 6, gpp = 0.241622226578
+W = -0.7, lomega_A0 =  19.2470326842
+orb_index = 0, gpp = 2.56585239883e-05
+orb_index = 1, gpp = 8.9585842083e-05
+orb_index = 2, gpp = 0.0208757707188
+orb_index = 3, gpp = 3.25532325739
+orb_index = 4, gpp = 3.49028995648
+orb_index = 5, gpp = 3.49029367905
+orb_index = 6, gpp = 0.315549193023
+W = -0.67, lomega_A0 =  10.572447101
+orb_index = 0, gpp = 2.53169131577e-05
+orb_index = 1, gpp = 8.87742660745e-05
+orb_index = 2, gpp = 0.0173926390661
+orb_index = 3, gpp = 1.05230016553
+orb_index = 4, gpp = 44.7892111921
+orb_index = 5, gpp = 44.7893130271
+orb_index = 6, gpp = 0.533589156406
+W = -0.63, lomega_A0 =  91.1819202714
+orb_index = 0, gpp = 2.51900884326e-05
+orb_index = 1, gpp = 8.8451353555e-05
+orb_index = 2, gpp = 0.0158388464942
+orb_index = 3, gpp = 0.599310873118
+orb_index = 4, gpp = 18.5963287608
+orb_index = 5, gpp = 18.5963040688
+orb_index = 6, gpp = 0.898885979627
+W = -0.6, lomega_A0 =  38.7067821703
+orb_index = 0, gpp = 2.50896189216e-05
+orb_index = 1, gpp = 8.85541818741e-05
+orb_index = 2, gpp = 0.0147247914132
+orb_index = 3, gpp = 0.386360436998
+orb_index = 4, gpp = 3.54597167124
+orb_index = 5, gpp = 3.54596991965
+orb_index = 6, gpp = 1.82594194324
+W = -0.57, lomega_A0 =  9.31908240634
+orb_index = 0, gpp = 2.50002591526e-05
+orb_index = 1, gpp = 9.05493325137e-05
+orb_index = 2, gpp = 0.0143826861459
+orb_index = 3, gpp = 0.269621314249
+orb_index = 4, gpp = 1.41462495773
+orb_index = 5, gpp = 1.4146246192
+orb_index = 6, gpp = 5.45680992596
+W = -0.54, lomega_A0 =  8.57017905287
+orb_index = 0, gpp = 2.49199662699e-05
+orb_index = 1, gpp = 0.000119870195348
+orb_index = 2, gpp = 0.0225305569588
+orb_index = 3, gpp = 0.198486998805
+orb_index = 4, gpp = 0.752874464715
+orb_index = 5, gpp = 0.752874360858
+orb_index = 6, gpp = 48.5173485231
+W = -0.51, lomega_A0 =  50.2442596946
+orb_index = 0, gpp = 2.48359622574e-05
+orb_index = 1, gpp = 9.72822319992e-05
+orb_index = 2, gpp = 0.0149298614313
+orb_index = 3, gpp = 0.152599871699
+orb_index = 4, gpp = 0.466028939094
+orb_index = 5, gpp = 0.466028895734
+orb_index = 6, gpp = 16.6271655719
+W = -0.48, lomega_A0 =  17.7268752581
+orb_index = 0, gpp = 2.47557763161e-05
+orb_index = 1, gpp = 8.75707933731e-05
+orb_index = 2, gpp = 0.0113538041823
+orb_index = 3, gpp = 0.120965966432
+orb_index = 4, gpp = 0.316528478107
+orb_index = 5, gpp = 0.31652845614
+orb_index = 6, gpp = 3.31332061545
+W = -0.45, lomega_A0 =  4.07880964688
+orb_index = 0, gpp = 2.46781625424e-05
+orb_index = 1, gpp = 8.57235136426e-05
+orb_index = 2, gpp = 0.0102563274206
+orb_index = 3, gpp = 0.0982164130486
+orb_index = 4, gpp = 0.228915995555
+orb_index = 5, gpp = 0.228915984479
+orb_index = 6, gpp = 1.34168813822
+W = -0.42, lomega_A0 =  1.9081032604
+orb_index = 0, gpp = 2.46019467314e-05
+orb_index = 1, gpp = 8.48181696672e-05
+orb_index = 2, gpp = 0.00951103142911
+orb_index = 3, gpp = 0.0813390879524
+orb_index = 4, gpp = 0.173222279479
+orb_index = 5, gpp = 0.173222276462
+orb_index = 6, gpp = 0.71928797065
+W = -0.39, lomega_A0 =  1.15669206609
+orb_index = 0, gpp = 2.45269855668e-05
+orb_index = 1, gpp = 8.41634080066e-05
+orb_index = 2, gpp = 0.00889738032341
+orb_index = 3, gpp = 0.068475384134
+orb_index = 4, gpp = 0.13563857007
+orb_index = 5, gpp = 0.135638574583
+orb_index = 6, gpp = 0.447206507049
+W = -0.36, lomega_A0 =  0.795965106553
+orb_index = 0, gpp = 2.44534807643e-05
+orb_index = 1, gpp = 8.36084146431e-05
+orb_index = 2, gpp = 0.00836123646591
+orb_index = 3, gpp = 0.058446196388
+orb_index = 4, gpp = 0.109087547407
+orb_index = 5, gpp = 0.109087559595
+orb_index = 6, gpp = 0.304664696159
+W = -0.33, lomega_A0 =  0.58975529791
+orb_index = 0, gpp = 2.43823347326e-05
+orb_index = 1, gpp = 8.31109830737e-05
+orb_index = 2, gpp = 0.00788151969386
+orb_index = 3, gpp = 0.0504754468328
+orb_index = 4, gpp = 0.0896386664937
+orb_index = 5, gpp = 0.0896386866489
+orb_index = 6, gpp = 0.220834613116
+W = -0.3, lomega_A0 =  0.458576426103
+orb_index = 0, gpp = 2.43175215906e-05
+orb_index = 1, gpp = 8.26813356767e-05
+orb_index = 2, gpp = 0.00744738623656
+orb_index = 3, gpp = 0.0440355923921
+orb_index = 4, gpp = 0.0749674670766
+orb_index = 5, gpp = 0.074967495455
+orb_index = 6, gpp = 0.167406902083
+W = -0.27, lomega_A0 =  0.368931842101
+orb_index = 0, gpp = 2.42948969347e-05
+orb_index = 1, gpp = 8.26005426293e-05
+orb_index = 2, gpp = 0.00705550140341
+orb_index = 3, gpp = 0.0387581269115
+orb_index = 4, gpp = 0.0636280134875
+orb_index = 5, gpp = 0.0636280502589
+orb_index = 6, gpp = 0.131279773734
+W = -0.24, lomega_A0 =  0.304456361235
+orb_index = 0, gpp = 2.41738595659e-05
+orb_index = 1, gpp = 8.18997995711e-05
+orb_index = 2, gpp = 0.00669358554863
+orb_index = 3, gpp = 0.0343787262067
+orb_index = 4, gpp = 0.0546826561575
+orb_index = 5, gpp = 0.0546827013987
+orb_index = 6, gpp = 0.105716495297
+W = -0.21, lomega_A0 =  0.256260238267
+orb_index = 0, gpp = 2.40710413274e-05
+orb_index = 1, gpp = 8.11245599824e-05
+orb_index = 2, gpp = 0.00635210086055
+orb_index = 3, gpp = 0.0307037746077
+orb_index = 4, gpp = 0.0475017979124
+orb_index = 5, gpp = 0.047501851616
+orb_index = 6, gpp = 0.0869657826493
+W = -0.18, lomega_A0 =  0.219130503247
+orb_index = 0, gpp = 2.39992899491e-05
+orb_index = 1, gpp = 8.06603617611e-05
+orb_index = 2, gpp = 0.00604198751372
+orb_index = 3, gpp = 0.0275904724178
+orb_index = 4, gpp = 0.0416499797083
+orb_index = 5, gpp = 0.0416500417974
+orb_index = 6, gpp = 0.0728048273748
+W = -0.15, lomega_A0 =  0.189841968464
+orb_index = 0, gpp = 2.39284759787e-05
+orb_index = 1, gpp = 8.02163806631e-05
+orb_index = 2, gpp = 0.00575521845011
+orb_index = 3, gpp = 0.0249295676942
+orb_index = 4, gpp = 0.0368182407757
+orb_index = 5, gpp = 0.0368183111173
+orb_index = 6, gpp = 0.061848657309
+W = -0.12, lomega_A0 =  0.166274140203
+orb_index = 0, gpp = 2.38577911467e-05
+orb_index = 1, gpp = 7.97788494611e-05
+orb_index = 2, gpp = 0.00548908540622
+orb_index = 3, gpp = 0.0226373292559
+orb_index = 4, gpp = 0.0327824554615
+orb_index = 5, gpp = 0.0327825338791
+orb_index = 6, gpp = 0.0531978665998
+W = -0.09, lomega_A0 =  0.146992907243
+orb_index = 0, gpp = 2.37872722569e-05
+orb_index = 1, gpp = 7.93458945863e-05
+orb_index = 2, gpp = 0.00524150979798
+orb_index = 3, gpp = 0.0206485617058
+orb_index = 4, gpp = 0.0293768417051
+orb_index = 5, gpp = 0.0293769279896
+orb_index = 6, gpp = 0.0462478121494
+W = -0.06, lomega_A0 =  0.130994786515
+orb_index = 0, gpp = 2.3716979479e-05
+orb_index = 1, gpp = 7.89170593116e-05
+orb_index = 2, gpp = 0.0050107244118
+orb_index = 3, gpp = 0.0189118809564
+orb_index = 4, gpp = 0.0264766410193
+orb_index = 5, gpp = 0.0264767349375
+orb_index = 6, gpp = 0.0405798586019
+W = -0.03, lomega_A0 =  0.117558473966
+orb_index = 0, gpp = 2.36469515222e-05
+orb_index = 1, gpp = 7.84921519394e-05
+orb_index = 2, gpp = 0.00479519011813
+orb_index = 3, gpp = 0.0173863439266
+orb_index = 4, gpp = 0.0239865130133
+orb_index = 5, gpp = 0.0239866143153
+orb_index = 6, gpp = 0.0358967092535
+W = 4.16333634234e-17, lomega_A0 =  0.10615350973
+ orb_index = 0, gpp = 2.91769e-05
+orb_index = 1, gpp = 0.000126353
+orb_index = 2, gpp = 0.0499506
+orb_index = 3, gpp = 0.0474616
+orb_index = 4, gpp = 0.00964901
+orb_index = 5, gpp = 0.00991254
+orb_index = 6, gpp = 0.0354727
+W = -2, lomega_A0 =  0.152602000175
+orb_index = 0, gpp = 2.6737023231e-05
+orb_index = 1, gpp = 0.000124077076554
+orb_index = 2, gpp = 0.0659862124778
+orb_index = 3, gpp = 0.296672667033
+orb_index = 4, gpp = 0.00888223553194
+orb_index = 5, gpp = 0.00905326936089
+orb_index = 6, gpp = 0.211115364764
+W = -1.95, lomega_A0 =  0.591860563267
+orb_index = 0, gpp = 3.30149504577e-05
+orb_index = 1, gpp = 0.000129728016833
+orb_index = 2, gpp = 0.0715480447072
+orb_index = 3, gpp = 0.0526339012045
+orb_index = 4, gpp = 0.00873783112896
+orb_index = 5, gpp = 0.00888217922922
+orb_index = 6, gpp = 0.0445792887564
+W = -1.92, lomega_A0 =  0.186543987994
+orb_index = 0, gpp = 7.18443462153e-05
+orb_index = 1, gpp = 0.000249152026728
+orb_index = 2, gpp = 0.284034471593
+orb_index = 3, gpp = 0.0484318091206
+orb_index = 4, gpp = 0.00876241639344
+orb_index = 5, gpp = 0.00889298104173
+orb_index = 6, gpp = 0.0742240396989
+W = -1.89, lomega_A0 =  0.424666714221
+orb_index = 0, gpp = 3.2180603404e-05
+orb_index = 1, gpp = 0.00013701525579
+orb_index = 2, gpp = 0.0833344482647
+orb_index = 3, gpp = 0.0606426851988
+orb_index = 4, gpp = 0.0089329012941
+orb_index = 5, gpp = 0.00906006600398
+orb_index = 6, gpp = 0.0535438386002
+W = -1.86, lomega_A0 =  0.215683135221
+orb_index = 0, gpp = 2.56276572264e-05
+orb_index = 1, gpp = 0.000181822089723
+orb_index = 2, gpp = 0.093725561329
+orb_index = 3, gpp = 0.313847463891
+orb_index = 4, gpp = 0.00924546272332
+orb_index = 5, gpp = 0.00937979057417
+orb_index = 6, gpp = 0.273199225898
+W = -1.83, lomega_A0 =  0.699604954163
+orb_index = 0, gpp = 2.94788658793e-05
+orb_index = 1, gpp = 0.00012206101286
+orb_index = 2, gpp = 0.261384377757
+orb_index = 3, gpp = 0.416938650305
+orb_index = 4, gpp = 0.00971560542506
+orb_index = 5, gpp = 0.00987112275539
+orb_index = 6, gpp = 0.159814710171
+W = -1.8, lomega_A0 =  0.857876006292
+orb_index = 0, gpp = 2.88036477468e-05
+orb_index = 1, gpp = 0.000116047583004
+orb_index = 2, gpp = 0.198570718173
+orb_index = 3, gpp = 0.280834229246
+orb_index = 4, gpp = 0.0103856817403
+orb_index = 5, gpp = 0.0105862129217
+orb_index = 6, gpp = 0.251918500385
+W = -1.77, lomega_A0 =  0.752440193697
+orb_index = 0, gpp = 3.00854790338e-05
+orb_index = 1, gpp = 0.000110927635935
+orb_index = 2, gpp = 0.173580453575
+orb_index = 3, gpp = 0.175999468526
+orb_index = 4, gpp = 0.0113471665541
+orb_index = 5, gpp = 0.011643037731
+orb_index = 6, gpp = 1.10647932991
+W = -1.74, lomega_A0 =  1.47919046941
+orb_index = 0, gpp = 2.82898562846e-05
+orb_index = 1, gpp = 0.000113419399392
+orb_index = 2, gpp = 0.280404500364
+orb_index = 3, gpp = 0.0470701311731
+orb_index = 4, gpp = 0.0128050236048
+orb_index = 5, gpp = 0.0133302900614
+orb_index = 6, gpp = 0.251077349814
+W = -1.71, lomega_A0 =  0.604829004272
+orb_index = 0, gpp = 2.79996176855e-05
+orb_index = 1, gpp = 0.000117729930316
+orb_index = 2, gpp = 0.507355340127
+orb_index = 3, gpp = 0.0557788657622
+orb_index = 4, gpp = 0.0153125152043
+orb_index = 5, gpp = 0.0165601900875
+orb_index = 6, gpp = 0.359564269167
+W = -1.68, lomega_A0 =  0.954716909896
+orb_index = 0, gpp = 2.97352073883e-05
+orb_index = 1, gpp = 0.00014485418855
+orb_index = 2, gpp = 0.279072635883
+orb_index = 3, gpp = 0.028829597122
+orb_index = 4, gpp = 0.0212724972332
+orb_index = 5, gpp = 0.0265136630652
+orb_index = 6, gpp = 0.100874330665
+W = -1.65, lomega_A0 =  0.456737313364
+orb_index = 0, gpp = 2.60164286416e-05
+orb_index = 1, gpp = 0.000105875644628
+orb_index = 2, gpp = 0.599828309395
+orb_index = 3, gpp = 0.0232110845439
+orb_index = 4, gpp = 0.0565999913179
+orb_index = 5, gpp = 0.122834564685
+orb_index = 6, gpp = 0.343476607713
+W = -1.62, lomega_A0 =  1.14608244973
+orb_index = 0, gpp = 2.94838003171e-05
+orb_index = 1, gpp = 0.000112495797346
+orb_index = 2, gpp = 0.472549423837
+orb_index = 3, gpp = 0.0269195378015
+orb_index = 4, gpp = 0.040894404982
+orb_index = 5, gpp = 0.0550649748049
+orb_index = 6, gpp = 0.0881287480992
+W = -1.6, lomega_A0 =  0.683699069122
+orb_index = 0, gpp = 2.98866816563e-05
+orb_index = 1, gpp = 0.000111433430134
+orb_index = 2, gpp = 0.782189639398
+orb_index = 3, gpp = 0.0310622492183
+orb_index = 4, gpp = 0.103172972753
+orb_index = 5, gpp = 0.0752466988359
+orb_index = 6, gpp = 0.0440966116586
+W = -1.57, lomega_A0 =  1.03590949198
+orb_index = 0, gpp = 3.24682158322e-05
+orb_index = 1, gpp = 0.000116722434341
+orb_index = 2, gpp = 2.10273406876
+orb_index = 3, gpp = 0.0490409088482
+orb_index = 4, gpp = 0.827148179176
+orb_index = 5, gpp = 0.518853550638
+orb_index = 6, gpp = 0.0583319367907
+W = -1.54, lomega_A0 =  3.55625783486
+orb_index = 0, gpp = 9.05837153787e-05
+orb_index = 1, gpp = 0.000289552939489
+orb_index = 2, gpp = 31.7809192497
+orb_index = 3, gpp = 0.498531990334
+orb_index = 4, gpp = 0.079454017834
+orb_index = 5, gpp = 0.111000595949
+orb_index = 6, gpp = 0.665674588472
+W = -1.5, lomega_A0 =  33.135960579
+orb_index = 0, gpp = 3.38754491353e-05
+orb_index = 1, gpp = 0.000128749226153
+orb_index = 2, gpp = 3.70609551076
+orb_index = 3, gpp = 0.0833232276984
+orb_index = 4, gpp = 0.11540372913
+orb_index = 5, gpp = 0.042489007777
+orb_index = 6, gpp = 0.104602141657
+W = -1.47, lomega_A0 =  4.0520762417
+orb_index = 0, gpp = 2.93932411908e-05
+orb_index = 1, gpp = 0.000110020861598
+orb_index = 2, gpp = 1.38026277024
+orb_index = 3, gpp = 0.0406439971371
+orb_index = 4, gpp = 0.144972035782
+orb_index = 5, gpp = 0.0317880103174
+orb_index = 6, gpp = 0.0393907360412
+W = -1.44, lomega_A0 =  1.63719696362
+orb_index = 0, gpp = 2.8567697655e-05
+orb_index = 1, gpp = 0.000106053127571
+orb_index = 2, gpp = 1.3157813008
+orb_index = 3, gpp = 0.0389470986468
+orb_index = 4, gpp = 0.0366955981047
+orb_index = 5, gpp = 0.0332041219355
+orb_index = 6, gpp = 0.0287930918121
+W = -1.41, lomega_A0 =  1.45355583212
+orb_index = 0, gpp = 2.88223709448e-05
+orb_index = 1, gpp = 0.000104647256173
+orb_index = 2, gpp = 2.66074888775
+orb_index = 3, gpp = 0.0549072310445
+orb_index = 4, gpp = 0.0266833254634
+orb_index = 5, gpp = 0.102950776454
+orb_index = 6, gpp = 0.0273717379089
+W = -1.38, lomega_A0 =  2.87279542825
+orb_index = 0, gpp = 3.45954804544e-05
+orb_index = 1, gpp = 0.00010724992025
+orb_index = 2, gpp = 15.9306739626
+orb_index = 3, gpp = 0.199031202943
+orb_index = 4, gpp = 0.0248075774928
+orb_index = 5, gpp = 0.048793242911
+orb_index = 6, gpp = 0.0318014791389
+W = -1.35, lomega_A0 =  16.2352493105
+orb_index = 0, gpp = 4.63749311261e-05
+orb_index = 1, gpp = 0.00011404525007
+orb_index = 2, gpp = 42.0003677982
+orb_index = 3, gpp = 0.478502077564
+orb_index = 4, gpp = 0.0251811462433
+orb_index = 5, gpp = 0.0313843712021
+orb_index = 6, gpp = 0.0399832841842
+W = -1.33, lomega_A0 =  42.5755790976
+orb_index = 0, gpp = 2.83273334597e-05
+orb_index = 1, gpp = 0.00010211809264
+orb_index = 2, gpp = 2.55437112471
+orb_index = 3, gpp = 0.0749705795238
+orb_index = 4, gpp = 0.028441905605
+orb_index = 5, gpp = 0.0294157224193
+orb_index = 6, gpp = 0.0634529061213
+W = -1.29, lomega_A0 =  2.7507826838
+orb_index = 0, gpp = 2.75788402711e-05
+orb_index = 1, gpp = 0.000102176891148
+orb_index = 2, gpp = 1.0660506971
+orb_index = 3, gpp = 0.113109854326
+orb_index = 4, gpp = 0.0342913759204
+orb_index = 5, gpp = 0.0341387567466
+orb_index = 6, gpp = 0.190767517548
+W = -1.26, lomega_A0 =  1.43848795737
+orb_index = 0, gpp = 2.81600700431e-05
+orb_index = 1, gpp = 0.000114517024174
+orb_index = 2, gpp = 1.35715299969
+orb_index = 3, gpp = 0.658216406402
+orb_index = 4, gpp = 0.050004581268
+orb_index = 5, gpp = 0.0478479901133
+orb_index = 6, gpp = 1.53926838304
+W = -1.23, lomega_A0 =  3.6526330376
+orb_index = 0, gpp = 2.70627983769e-05
+orb_index = 1, gpp = 0.00010062758109
+orb_index = 2, gpp = 0.40157921474
+orb_index = 3, gpp = 0.104169469507
+orb_index = 4, gpp = 0.140871745285
+orb_index = 5, gpp = 0.12062025516
+orb_index = 6, gpp = 0.165384063223
+W = -1.2, lomega_A0 =  0.932752438295
+orb_index = 0, gpp = 2.68505573753e-05
+orb_index = 1, gpp = 9.90669740163e-05
+orb_index = 2, gpp = 0.246626627246
+orb_index = 3, gpp = 0.068112938156
+orb_index = 4, gpp = 0.448786052694
+orb_index = 5, gpp = 0.542423497135
+orb_index = 6, gpp = 0.0654481698745
+W = -1.17, lomega_A0 =  1.37152320264
+orb_index = 0, gpp = 2.67151266547e-05
+orb_index = 1, gpp = 9.83966262871e-05
+orb_index = 2, gpp = 0.177344515948
+orb_index = 3, gpp = 0.0669903858144
+orb_index = 4, gpp = 0.0799232280776
+orb_index = 5, gpp = 0.0846523105251
+orb_index = 6, gpp = 0.0468172581743
+W = -1.14, lomega_A0 =  0.455852810293
+orb_index = 0, gpp = 2.66021304339e-05
+orb_index = 1, gpp = 9.80167365454e-05
+orb_index = 2, gpp = 0.137581182681
+orb_index = 3, gpp = 0.0745915362755
+orb_index = 4, gpp = 0.0548916051722
+orb_index = 5, gpp = 0.0556103033005
+orb_index = 6, gpp = 0.0433176001846
+W = -1.11, lomega_A0 =  0.366116846481
+orb_index = 0, gpp = 2.65016192368e-05
+orb_index = 1, gpp = 9.79881616037e-05
+orb_index = 2, gpp = 0.114075416608
+orb_index = 3, gpp = 0.0890760077656
+orb_index = 4, gpp = 0.052958929516
+orb_index = 5, gpp = 0.0535463153104
+orb_index = 6, gpp = 0.0465626511913
+W = -1.08, lomega_A0 =  0.356343810172
+orb_index = 0, gpp = 2.64139565369e-05
+orb_index = 1, gpp = 9.88276799608e-05
+orb_index = 2, gpp = 0.104284709448
+orb_index = 3, gpp = 0.115275277159
+orb_index = 4, gpp = 0.0583876415193
+orb_index = 5, gpp = 0.0585136493863
+orb_index = 6, gpp = 0.05788691006
+W = -1.05, lomega_A0 =  0.39447342921
+orb_index = 0, gpp = 2.63341507387e-05
+orb_index = 1, gpp = 0.000102767174796
+orb_index = 2, gpp = 0.121046738094
+orb_index = 3, gpp = 0.177420549324
+orb_index = 4, gpp = 0.0708039359258
+orb_index = 5, gpp = 0.0708011624361
+orb_index = 6, gpp = 0.0937766230058
+W = -1.02, lomega_A0 =  0.533978110111
+orb_index = 0, gpp = 2.6372864382e-05
+orb_index = 1, gpp = 0.000134048105871
+orb_index = 2, gpp = 0.32731624491
+orb_index = 3, gpp = 0.519798451915
+orb_index = 4, gpp = 0.120605475353
+orb_index = 5, gpp = 0.120258857991
+orb_index = 6, gpp = 0.332975990767
+W = -0.99, lomega_A0 =  1.42111544191
+orb_index = 0, gpp = 2.65274286306e-05
+orb_index = 1, gpp = 0.000192807381327
+orb_index = 2, gpp = 0.723050748013
+orb_index = 3, gpp = 1.14690689926
+orb_index = 4, gpp = 0.241720796889
+orb_index = 5, gpp = 0.2413257896
+orb_index = 6, gpp = 0.776418008174
+W = -0.96, lomega_A0 =  3.12964157674
+orb_index = 0, gpp = 2.60950608916e-05
+orb_index = 1, gpp = 0.000105095396937
+orb_index = 2, gpp = 0.122675685646
+orb_index = 3, gpp = 0.319787010332
+orb_index = 4, gpp = 0.114243660548
+orb_index = 5, gpp = 0.114194376558
+orb_index = 6, gpp = 0.136943851175
+W = -0.93, lomega_A0 =  0.807975774717
+orb_index = 0, gpp = 2.5986794791e-05
+orb_index = 1, gpp = 9.68876031217e-05
+orb_index = 2, gpp = 0.0650880293737
+orb_index = 3, gpp = 0.315757591516
+orb_index = 4, gpp = 0.123531520123
+orb_index = 5, gpp = 0.123518350519
+orb_index = 6, gpp = 0.0874353459647
+W = -0.9, lomega_A0 =  0.715453711895
+orb_index = 0, gpp = 2.59088370985e-05
+orb_index = 1, gpp = 9.43666824471e-05
+orb_index = 2, gpp = 0.0471488973628
+orb_index = 3, gpp = 0.41692029505
+orb_index = 4, gpp = 0.149857939492
+orb_index = 5, gpp = 0.149853416973
+orb_index = 6, gpp = 0.0819463704163
+W = -0.87, lomega_A0 =  0.845847194813
+orb_index = 0, gpp = 2.58450337117e-05
+orb_index = 1, gpp = 9.30596147107e-05
+orb_index = 2, gpp = 0.0382034289134
+orb_index = 3, gpp = 0.632353093832
+orb_index = 4, gpp = 0.190886737908
+orb_index = 5, gpp = 0.190885034622
+orb_index = 6, gpp = 0.0881039398101
+W = -0.84, lomega_A0 =  1.14055113973
+orb_index = 0, gpp = 2.58095008342e-05
+orb_index = 1, gpp = 9.21869841172e-05
+orb_index = 2, gpp = 0.0327383696656
+orb_index = 3, gpp = 1.11097852442
+orb_index = 4, gpp = 0.254060361582
+orb_index = 5, gpp = 0.254059748306
+orb_index = 6, gpp = 0.101172057818
+W = -0.81, lomega_A0 =  1.75312705827
+orb_index = 0, gpp = 2.58733267205e-05
+orb_index = 1, gpp = 9.15966278152e-05
+orb_index = 2, gpp = 0.0294716042986
+orb_index = 3, gpp = 2.47819780981
+orb_index = 4, gpp = 0.356480721858
+orb_index = 5, gpp = 0.356480602003
+orb_index = 6, gpp = 0.121667781676
+W = -0.78, lomega_A0 =  3.3424159896
+orb_index = 0, gpp = 2.65400516749e-05
+orb_index = 1, gpp = 9.17167451261e-05
+orb_index = 2, gpp = 0.0307558027727
+orb_index = 3, gpp = 9.44049074063
+orb_index = 4, gpp = 0.537517838456
+orb_index = 5, gpp = 0.537518027801
+orb_index = 6, gpp = 0.155948640921
+W = -0.75, lomega_A0 =  10.7023493074
+orb_index = 0, gpp = 2.9656404036e-05
+orb_index = 1, gpp = 9.42396493847e-05
+orb_index = 2, gpp = 0.0467645298196
+orb_index = 3, gpp = 39.492512161
+orb_index = 4, gpp = 1.11120821283
+orb_index = 5, gpp = 1.11120898895
+orb_index = 6, gpp = 0.242214550303
+W = -0.71, lomega_A0 =  42.004032339
+orb_index = 0, gpp = 2.58648705988e-05
+orb_index = 1, gpp = 8.99315410769e-05
+orb_index = 2, gpp = 0.022545732143
+orb_index = 3, gpp = 4.93124282829
+orb_index = 4, gpp = 2.45597703999
+orb_index = 5, gpp = 2.4559793544
+orb_index = 6, gpp = 0.283671548677
+W = -0.68, lomega_A0 =  10.1495322999
+orb_index = 0, gpp = 2.54402992932e-05
+orb_index = 1, gpp = 8.91132653648e-05
+orb_index = 2, gpp = 0.0187937290148
+orb_index = 3, gpp = 1.71320515688
+orb_index = 4, gpp = 9.03317352964
+orb_index = 5, gpp = 9.03318703395
+orb_index = 6, gpp = 0.40223550977
+W = -0.65, lomega_A0 =  20.2007095128
+orb_index = 0, gpp = 2.5269784937e-05
+orb_index = 1, gpp = 8.86397818319e-05
+orb_index = 2, gpp = 0.0168190783313
+orb_index = 3, gpp = 0.856673965111
+orb_index = 4, gpp = 91.409928636
+orb_index = 5, gpp = 91.4099573827
+orb_index = 6, gpp = 0.625473718196
+W = -0.62, lomega_A0 =  184.31896669
+orb_index = 0, gpp = 2.51547865494e-05
+orb_index = 1, gpp = 8.84139532005e-05
+orb_index = 2, gpp = 0.0154190929964
+orb_index = 3, gpp = 0.512085637253
+orb_index = 4, gpp = 9.259940088
+orb_index = 5, gpp = 9.25993155932
+orb_index = 6, gpp = 1.10853360975
+W = -0.59, lomega_A0 =  20.1560235561
+orb_index = 0, gpp = 2.50589434443e-05
+orb_index = 1, gpp = 8.88296326168e-05
+orb_index = 2, gpp = 0.0144734780268
+orb_index = 3, gpp = 0.340197870581
+orb_index = 4, gpp = 2.48880705405
+orb_index = 5, gpp = 2.48880610985
+orb_index = 6, gpp = 2.47627841148
+W = -0.56, lomega_A0 =  7.80867681257
+orb_index = 0, gpp = 2.49720837913e-05
+orb_index = 1, gpp = 9.30978210394e-05
+orb_index = 2, gpp = 0.0148772596504
+orb_index = 3, gpp = 0.242282983926
+orb_index = 4, gpp = 1.12082664564
+orb_index = 5, gpp = 1.12082642641
+orb_index = 6, gpp = 9.38167468681
+W = -0.53, lomega_A0 =  11.8806060723
+orb_index = 0, gpp = 2.48962877323e-05
+orb_index = 1, gpp = 0.000147291619037
+orb_index = 2, gpp = 0.0306642842494
+orb_index = 3, gpp = 0.180696929731
+orb_index = 4, gpp = 0.633324013313
+orb_index = 5, gpp = 0.633323937945
+orb_index = 6, gpp = 88.3449647905
+W = -0.5, lomega_A0 =  89.8231461437
+orb_index = 0, gpp = 2.48086958154e-05
+orb_index = 1, gpp = 9.14587149044e-05
+orb_index = 2, gpp = 0.0129383758413
+orb_index = 3, gpp = 0.140819393133
+orb_index = 4, gpp = 0.40619688621
+orb_index = 5, gpp = 0.406196852128
+orb_index = 6, gpp = 8.45667977529
+W = -0.47, lomega_A0 =  9.42294755001
+orb_index = 0, gpp = 2.47297230625e-05
+orb_index = 1, gpp = 8.67356628036e-05
+orb_index = 2, gpp = 0.0109131474014
+orb_index = 3, gpp = 0.112574637328
+orb_index = 4, gpp = 0.282438421652
+orb_index = 5, gpp = 0.282438403914
+orb_index = 6, gpp = 2.34058940051
+W = -0.44, lomega_A0 =  3.02906547619
+orb_index = 0, gpp = 2.46526162269e-05
+orb_index = 1, gpp = 8.53737565117e-05
+orb_index = 2, gpp = 0.00998657778243
+orb_index = 3, gpp = 0.0920481764927
+orb_index = 4, gpp = 0.207688971064
+orb_index = 5, gpp = 0.20768896282
+orb_index = 6, gpp = 1.06615246371
+W = -0.41, lomega_A0 =  1.58367517824
+orb_index = 0, gpp = 2.45768180498e-05
+orb_index = 1, gpp = 8.45833894594e-05
+orb_index = 2, gpp = 0.00929572606638
+orb_index = 3, gpp = 0.0766740817215
+orb_index = 4, gpp = 0.159122451236
+orb_index = 5, gpp = 0.159122450737
+orb_index = 6, gpp = 0.606092140311
+W = -0.38, lomega_A0 =  1.01041601028
+orb_index = 0, gpp = 2.45022994841e-05
+orb_index = 1, gpp = 8.39705558819e-05
+orb_index = 2, gpp = 0.00871142233974
+orb_index = 3, gpp = 0.0648621402662
+orb_index = 4, gpp = 0.125801344618
+orb_index = 5, gpp = 0.125801351659
+orb_index = 6, gpp = 0.390228527334
+W = -0.35, lomega_A0 =  0.715513259072
+orb_index = 0, gpp = 2.44294182989e-05
+orb_index = 1, gpp = 8.343687893e-05
+orb_index = 2, gpp = 0.00819572566115
+orb_index = 3, gpp = 0.0555906695793
+orb_index = 4, gpp = 0.101954144715
+orb_index = 5, gpp = 0.101954159527
+orb_index = 6, gpp = 0.272075301328
+W = -0.32, lomega_A0 =  0.539877867108
+orb_index = 0, gpp = 2.43595998354e-05
+orb_index = 1, gpp = 8.29575763754e-05
+orb_index = 2, gpp = 0.0077321162573
+orb_index = 3, gpp = 0.0481795727179
+orb_index = 4, gpp = 0.0843023366317
+orb_index = 5, gpp = 0.0843023595034
+orb_index = 6, gpp = 0.200485179892
+W = -0.29, lomega_A0 =  0.425108882179
+orb_index = 0, gpp = 2.43001825229e-05
+orb_index = 1, gpp = 8.25736123419e-05
+orb_index = 2, gpp = 0.00731176067546
+orb_index = 3, gpp = 0.0421620500325
+orb_index = 4, gpp = 0.0708717975307
+orb_index = 5, gpp = 0.0708718286926
+orb_index = 6, gpp = 0.153860988296
+W = -0.26, lomega_A0 =  0.345185299022
+orb_index = 0, gpp = 2.43396916018e-05
+orb_index = 1, gpp = 8.30479057408e-05
+orb_index = 2, gpp = 0.00694017428533
+orb_index = 3, gpp = 0.037209792543
+orb_index = 4, gpp = 0.0604162916582
+orb_index = 5, gpp = 0.0604163312487
+orb_index = 6, gpp = 0.121812680107
+W = -0.23, lomega_A0 =  0.286902657439
+orb_index = 0, gpp = 2.41262074607e-05
+orb_index = 1, gpp = 8.1517313873e-05
+orb_index = 2, gpp = 0.00657461266552
+orb_index = 3, gpp = 0.0330832180005
+orb_index = 4, gpp = 0.0521176864422
+orb_index = 5, gpp = 0.0521177345087
+orb_index = 6, gpp = 0.0988418582756
+W = -0.2, lomega_A0 =  0.242840753414
+orb_index = 0, gpp = 2.40468017282e-05
+orb_index = 1, gpp = 8.0964760646e-05
+orb_index = 2, gpp = 0.00624590828253
+orb_index = 3, gpp = 0.0296096225629
+orb_index = 4, gpp = 0.0454208979597
+orb_index = 5, gpp = 0.0454209544702
+orb_index = 6, gpp = 0.0818167887837
+W = -0.17, lomega_A0 =  0.208619183621
+orb_index = 0, gpp = 2.39756646934e-05
+orb_index = 1, gpp = 8.05113541252e-05
+orb_index = 2, gpp = 0.00594395859194
+orb_index = 3, gpp = 0.0266578176637
+orb_index = 4, gpp = 0.0399385676413
+orb_index = 5, gpp = 0.0399386324984
+orb_index = 6, gpp = 0.068848785397
+W = -0.14, lomega_A0 =  0.181432248811
+orb_index = 0, gpp = 2.39049002654e-05
+orb_index = 1, gpp = 8.00699715272e-05
+orb_index = 2, gpp = 0.00566432507801
+orb_index = 3, gpp = 0.0241280738265
+orb_index = 4, gpp = 0.0353937302432
+orb_index = 5, gpp = 0.0353938032982
+orb_index = 6, gpp = 0.0587435381057
+W = -0.11, lomega_A0 =  0.159427445423
+orb_index = 0, gpp = 2.38342630058e-05
+orb_index = 1, gpp = 7.96340553108e-05
+orb_index = 2, gpp = 0.0054045908559
+orb_index = 3, gpp = 0.0219434723406
+orb_index = 4, gpp = 0.0315841061454
+orb_index = 5, gpp = 0.0315841872099
+orb_index = 6, gpp = 0.0507159533601
+W = -0.08, lomega_A0 =  0.14133577823
+orb_index = 0, gpp = 2.3763813882e-05
+orb_index = 1, gpp = 7.92025035784e-05
+orb_index = 2, gpp = 0.00516279595563
+orb_index = 3, gpp = 0.0200438684271
+orb_index = 4, gpp = 0.0283591758009
+orb_index = 5, gpp = 0.0283592646568
+orb_index = 6, gpp = 0.0442327545387
+W = -0.05, lomega_A0 =  0.126260825697
+orb_index = 0, gpp = 2.36936060224e-05
+orb_index = 1, gpp = 7.87749939326e-05
+orb_index = 2, gpp = 0.00493725544295
+orb_index = 3, gpp = 0.0183816801959
+orb_index = 4, gpp = 0.0256050628223
+orb_index = 5, gpp = 0.0256051592302
+orb_index = 6, gpp = 0.0389214299597
+W = -0.02, lomega_A0 =  0.113553056251
+
+
+Time taken for extrapolation (lomega_npts = 201): 0.112194715 secs
+
+Time taken for GF-CCSD: 8.430695956 secs
