@@ -198,12 +198,12 @@ mkdir build && cd build
 cmake -DCMAKE_INSTALL_PREFIX=$GFCC_INSTALL_PATH ..
 make install
 
-cd ../TAMM
+cd ../../TAMM
 mkdir build && cd build
 cmake -DCMAKE_INSTALL_PREFIX=$GFCC_INSTALL_PATH ..
 make -j3 install
 
-cd ..
+cd ../..
 mkdir build && cd build
 cmake -DCMAKE_INSTALL_PREFIX=$GFCC_INSTALL_PATH ..
 make -j2 install
@@ -233,12 +233,12 @@ mkdir build && cd build
 cmake -DCMAKE_INSTALL_PREFIX=$GFCC_INSTALL_PATH ..
 make install
 
-cd ../TAMM
+cd ../../TAMM
 mkdir build && cd build
 cmake -DCMAKE_INSTALL_PREFIX=$GFCC_INSTALL_PATH ..
 make -j3 install
 
-cd ..
+cd ../..
 mkdir build && cd build
 cmake -DCMAKE_INSTALL_PREFIX=$GFCC_INSTALL_PATH ..
 make -j2 install
