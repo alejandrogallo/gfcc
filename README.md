@@ -1,5 +1,4 @@
 # Green’s Function Coupled Cluster Library (GFCCLib) v. 1.0
-------------------------------------------------------------
 
 Prototype code for the GFCC library.
 
