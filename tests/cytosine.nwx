@@ -1,0 +1,59 @@
+13
+
+H     -1.37637752     2.14441470     0.00000000
+H     -2.78827186     0.24416670     0.00000000
+H     -1.70778184    -2.01550481     0.00000000
+H      0.47233183    -3.17578770     0.00000000
+H      1.96635210    -2.29303090     0.00000000
+C     -1.71551919     0.10970488     0.00000000
+C     -1.12613280    -1.10772199     0.00000000
+C      0.31075569    -1.11495585     0.00000000
+C      0.46477225     1.20909536     0.00000000
+O      1.05440626     2.27062854     0.00000000
+N      1.04826289    -0.02687619     0.00000000
+N     -0.95923279     1.22765234     0.00000000
+N      0.96191828    -2.30212472     0.00000000
+
+COMMON {  
+    basis  6-31++g*
+    maxiter 50
+    geometry units angstrom
+    //debug true
+}
+
+SCF 
+{  //start of scf section
+
+    tol_int 1e-8
+    tol_lindep 1e-10
+    conve 1e-6
+    convd 1e-5
+    diis_hist 10
+    tilesize 50
+    //debug true
+    //restart true
+}
+
+CD {
+    diagtol 1e-6
+    max_cvecs 12 //factor*nao
+    //debug false
+}
+
+CCSD {
+    threshold 1e-6
+    //debug true
+    //readt true
+    writet true
+    //gf_restart false
+    gf_ndiis 19
+    gf_p_oi_range 1 
+    gf_eta -0.01 
+    gf_threshold 1e-2  
+    gf_omega_min -0.5  
+    gf_omega_max -0.3  
+    gf_omega_min_e -2.0
+    gf_omega_max_e 0  
+    gf_omega_delta 0.01
+
+}

@@ -1,0 +1,7 @@
+ExternalProject_Add(bphash_External
+    GIT_REPOSITORY https://github.com/bennybp/BPHash
+    GIT_TAG 64a6a45ae60b906124528962f9c94e96d9e6001c
+    CMAKE_ARGS ${DEPENDENCY_CMAKE_OPTIONS}
+    INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} install DESTDIR=${STAGE_DIR}
+)
+
