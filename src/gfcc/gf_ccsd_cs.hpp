@@ -4,7 +4,7 @@
 
 #include "gf_diis_cs.hpp"
 #include "gf_guess.hpp"
-#include "cd_ccsd_common.hpp"
+#include "contrib/cd_ccsd_common.hpp"
 #include <algorithm>
 // #include <Eigen/QR>
 #undef I
