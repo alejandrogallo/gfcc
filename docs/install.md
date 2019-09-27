@@ -28,6 +28,7 @@ Supported Configurations
 export GFCC_INSTALL_PATH=$HOME/gfcc_install
 
 git clone https://github.com/spec-org/gfcc.git
+cd gfcc
 cd contrib/CMakeBuild
 mkdir build && cd build
 cmake -DCMAKE_INSTALL_PREFIX=$GFCC_INSTALL_PATH \
