@@ -191,6 +191,8 @@ export GFCC_INSTALL_PATH=$HOME/gfcc_install
 
 git clone https://github.com/spec-org/gfcc.git
 
+cd gfcc
+
 cd contrib/CMakeBuild
 mkdir build && cd build
 cmake -DCMAKE_INSTALL_PREFIX=$GFCC_INSTALL_PATH ..
@@ -205,3 +207,39 @@ cd ..
 mkdir build && cd build
 cmake -DCMAKE_INSTALL_PREFIX=$GFCC_INSTALL_PATH ..
 make -j2 install
+
+Build instructions for Ubuntu Bionic 18.04
+----------------------------
+
+```
+export FC=gfortran-8
+export CC=gcc-8
+export CXX=g++-8
+export GFCC_INSTALL_PATH=$HOME/gfcc_install
+
+sudo apt install g++-8 gcc-8 gfortran-8
+
+
+git clone https://github.com/spec-org/gfcc.git
+
+cd gfcc
+
+curl -LJO https://github.com/Kitware/CMake/releases/download/v3.15.3/cmake-3.15.3-Linux-x86_64.tar.gz
+tar xzf cmake-3.15.3-Linux-x86_64.tar.gz
+export PATH=`pwd`/cmake-3.15.3-Linux-x86_64/bin:$PATH
+
+cd contrib/CMakeBuild
+mkdir build && cd build
+cmake -DCMAKE_INSTALL_PREFIX=$GFCC_INSTALL_PATH ..
+make install
+
+cd ../TAMM
+mkdir build && cd build
+cmake -DCMAKE_INSTALL_PREFIX=$GFCC_INSTALL_PATH ..
+make -j3 install
+
+cd ..
+mkdir build && cd build
+cmake -DCMAKE_INSTALL_PREFIX=$GFCC_INSTALL_PATH ..
+make -j2 install
+```
