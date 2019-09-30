@@ -55,5 +55,5 @@ CCSD {
     gf_omega_min_e -2.0
     gf_omega_max_e 0  
     gf_omega_delta 0.01
-
+    gf_extrapolate_level 4
 }
