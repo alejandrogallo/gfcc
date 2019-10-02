@@ -1,0 +1,59 @@
+
+3
+
+O     0.00000000    0.00000000    0.00000000
+H     0.75946038    0.00000000    0.56053336
+H    -0.75946038    0.00000000    0.56053336
+
+COMMON {  
+    basis cc-pvdz
+    maxiter 50
+    geometry units angstrom
+    //dfbasis sto-3g
+    //debug true
+}
+
+//Following sections can be specified in any order 
+
+SCF 
+{  //start of scf section
+
+    tol_int 1e-8
+    tol_lindep 1e-6
+    conve 1e-6
+    convd 1e-5
+    diis_hist 10
+    force_tilesize false
+    tilesize 30
+    //debug true
+    //restart true
+}
+
+CD {
+    diagtol 1e-6
+    max_cvecs 12 //factor*nao
+    //debug false
+}
+
+CCSD {
+    threshold 1e-6
+    //debug true
+    //readt true
+    writet true
+    //gf_restart false
+    gf_ndiis 10
+    gf_maxiter 200
+    gf_damping_factor 1
+    gf_p_oi_range 1 
+    gf_eta -0.01 
+    gf_threshold 1e-2  
+    gf_omega_min -0.8
+    gf_omega_max -0.4
+    gf_omega_min_e -2.0
+    gf_omega_max_e 0  
+    gf_omega_delta 0.01
+    //gf_omega_delta_e 0.05
+    //gf_extrapolate_level 3
+
+}
+
