@@ -143,13 +143,6 @@ std::tuple<int, int, double, libint2::BasisSet, std::vector<size_t>, Tensor<doub
 
     exc.pg().barrier();
 
-    if(options_map.scf_options.restart) {
-      Tensor<TensorType> C_tamm{tAO,tAO};
-      Tensor<TensorType> F_tamm{tAO,tAO};
-      Tensor<TensorType>::allocate(&exc,C_tamm,F_tamm);
-      return std::make_tuple(ndocc, nao, ehf + enuc, shells, shell_tile_map, C_tamm, F_tamm, tAO, tAOt);
-    }
-
     #if SCF_THROTTLE_RESOURCES
   if (rank < hf_nranks) {
 
@@ -227,35 +220,14 @@ std::tuple<int, int, double, libint2::BasisSet, std::vector<size_t>, Tensor<doub
     // pre-compute data for Schwarz bounds
     auto SchwarzK = compute_schwarz_ints<>(shells);
 
-
-    const auto use_hcore_guess = false;  // use core Hamiltonian eigenstates to guess density?
-    // set to true to match the result of versions 0, 1, and 2 of the code
-    // HOWEVER !!! even for medium-size molecules hcore will usually fail !!!
-    // thus set to false to use Superposition-Of-Atomic-Densities (SOAD) guess
-
     Matrix D;
-    // Matrix C;
-    // Matrix C_occ;
-    // Matrix F;
-
-    //     Matrix C_down; //TODO: all are array of 2 vectors
-    // Matrix D_down;
-    // Matrix F_down;
-    // Matrix C_occ_down;
 
     hf_t1 = std::chrono::high_resolution_clock::now();
 
-    if (use_hcore_guess) 
-      compute_hcore_guess(ec, ndocc, shells, SchwarzK, H, X, F, C, C_occ, D);
-    else if (restart)
+    if (restart)
         scf_restart(ec, N, filename, ndocc, C, D);
     else   // SOAD as the guess density
       compute_initial_guess<TensorType>(ec, ndocc, atoms, shells, basis, X, H, C, C_occ, D);
-    
-
-    //     C_down = C;
-    // D_down = D;
-    // C_occ_down = C_occ;
 
     H.resize(0,0);
     hf_t2 = std::chrono::high_resolution_clock::now();
