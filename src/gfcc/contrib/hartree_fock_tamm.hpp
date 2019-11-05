@@ -91,6 +91,9 @@ std::tuple<int, int, double, libint2::BasisSet, std::vector<size_t>, Tensor<doub
     }
 
     auto [ndocc, enuc]  = compute_NRE(exc, atoms);
+
+    if(rank==0) std::cout << "#electrons = " << 2*ndocc << std::endl;
+    
     // compute OBS non-negligible shell-pair list
     compute_shellpair_list(exc, shells);
 
@@ -157,9 +160,16 @@ std::tuple<int, int, double, libint2::BasisSet, std::vector<size_t>, Tensor<doub
       Distribution_NW distribution;
       RuntimeEngine re;
       ExecutionContext ec{pg, &distribution, mgr, &re};
+
     #else 
       ExecutionContext& ec = exc;
     #endif
+
+    ProcGroup pg_l{MPI_COMM_SELF};
+    auto mgr_l = MemoryManagerLocal::create_coll(pg_l);
+    Distribution_NW distribution_l;
+    RuntimeEngine re_l;
+    ExecutionContext ec_l{pg_l, &distribution_l, mgr_l, &re_l};
 
     #ifdef SCALAPACK
 
@@ -317,7 +327,8 @@ std::tuple<int, int, double, libint2::BasisSet, std::vector<size_t>, Tensor<doub
     if(do_density_fitting) {
       xyK_tamm = Tensor<TensorType>{tAO, tAO, tdfAO}; //n,n,ndf
       C_occ_tamm = Tensor<TensorType>{tAO,tdfCocc}; //n,nocc
-      Tensor<TensorType>::allocate(&ec, xyK_tamm,C_occ_tamm);
+      Tensor<TensorType>::allocate(&ec, xyK_tamm, C_occ_tamm);
+      // Tensor<TensorType>::allocate(&ec_l,C_occ_tamm);
     }
     //df basis
 
@@ -423,13 +434,28 @@ std::tuple<int, int, double, libint2::BasisSet, std::vector<size_t>, Tensor<doub
       #if SCF_THROTTLE_RESOURCES
       ec.flush_and_sync();
       MemoryManagerGA::destroy_coll(mgr);
+      #endif
+
+      ec_l.flush_and_sync();
+      MemoryManagerLocal::destroy_coll(mgr_l);      
+
+      #ifdef SCALAPACK
+
+      // Free up created comms / groups
+      MPI_Comm_free( &scalapack_comm );
+      MPI_Group_free( &scalapack_group );
+      MPI_Group_free( &world_group );
+
+      #endif
+    
+    #if SCF_THROTTLE_RESOURCES
 
     } //end scaled down process group
 
       // MPI_Group_free(&wgroup);
       // MPI_Group_free(&hfgroup);
       // MPI_Comm_free(&hf_comm);
-      #endif
+    #endif
 
     //C,F1 is not allocated for ranks > hf_nranks 
     exc.pg().barrier(); 
@@ -445,15 +471,6 @@ std::tuple<int, int, double, libint2::BasisSet, std::vector<size_t>, Tensor<doub
     }
 
     exc.pg().barrier();
-
-    #ifdef SCALAPACK
-
-    // Free up created comms / groups
-    MPI_Comm_free( &scalapack_comm );
-    MPI_Group_free( &scalapack_group );
-    MPI_Group_free( &world_group );
-
-    #endif
 
     //F, C are not deallocated.
     return std::make_tuple(ndocc, nao, ehf + enuc, shells, shell_tile_map, C_tamm, F_tamm, tAO, tAOt);
