@@ -22,9 +22,9 @@
 #include "ga-mpi.h"
 
 // #define EIGEN_DIAG 
-#ifndef SCALAPACK
-  #include "linalg.hpp"
-#else 
+// #ifndef SCALAPACK
+#include "common/linalg.hpp"
+#ifdef SCALAPACK
   // CXXBLACS BLACS/ScaLAPACK wrapper
   // #include LAPACKE_HEADER
   // #define CXXBLACS_HAS_LAPACK
