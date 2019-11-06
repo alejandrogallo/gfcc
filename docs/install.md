@@ -57,6 +57,7 @@ CC=gcc CXX=g++ FC=gfortran cmake -DCMAKE_INSTALL_PREFIX=$GFCC_INSTALL_PATH ..
 # make step takes a while, please use as many cores as possible
 make -j3
 make install
+ctest (optional)
 ```
 
 Step 3: Building the GFCC library
@@ -105,6 +106,7 @@ CC=gcc CXX=g++ FC=gfortran cmake \
 ```
 make -j3
 make install
+ctest (optional)
 ```
 
 Build instructions for Summit (using GCC+ESSL)
@@ -199,6 +201,7 @@ mkdir build && cd build
 CC=gcc-8 CXX=g++-8 FC=gfortran-8 cmake -DCMAKE_INSTALL_PREFIX=$GFCC_INSTALL_PATH ..
 make -j3 
 make install
+ctest (optional)
 
 cd $GFCC_SRC
 mkdir build && cd build
@@ -229,6 +232,7 @@ cd $GFCC_SRC/contrib/TAMM
 mkdir build && cd build
 CC=gcc-8 CXX=g++-8 FC=gfortran-8 cmake -DCMAKE_INSTALL_PREFIX=$GFCC_INSTALL_PATH ..
 make -j3 install
+ctest (optional)
 
 cd $GFCC_SRC
 mkdir build && cd build

@@ -294,7 +294,8 @@ std::tuple<TensorType,TensorType> scf_iter_body(ExecutionContext& ec,
       Tensor<TensorType>& D_diff, Tensor<TensorType>& ehf_tmp, 
       Tensor<TensorType>& ehf_tamm,
       std::vector<tamm::Tensor<TensorType>>& diis_hist, 
-      std::vector<tamm::Tensor<TensorType>>& fock_hist){
+      std::vector<tamm::Tensor<TensorType>>& fock_hist,
+      bool scf_restart=false){
 
         Scheduler sch{ec};
 
@@ -368,6 +369,7 @@ std::tuple<TensorType,TensorType> scf_iter_body(ExecutionContext& ec,
         tamm_to_eigen_tensor(F1,F);
 
         do_t1 = std::chrono::high_resolution_clock::now();
+        if(!scf_restart){
         // solve F C = e S C
         // Eigen::GeneralizedSelfAdjointEigenSolver<Matrix>
         // gen_eig_solver(F, S);
@@ -487,7 +489,8 @@ std::tuple<TensorType,TensorType> scf_iter_body(ExecutionContext& ec,
         do_time =
         std::chrono::duration_cast<std::chrono::duration<double>>((do_t2 - do_t1)).count();
 
-        if(rank == 0 && debug) std::cout << "eigen_solve:" << do_time << "s, ";    
+        if(rank == 0 && debug) std::cout << "eigen_solve:" << do_time << "s, ";   
+        }//end scf_restart 
 
         do_t1 = std::chrono::high_resolution_clock::now();
 
@@ -954,7 +957,7 @@ void compute_2bf(ExecutionContext& ec, const libint2::BasisSet& obs,
           if(rank == 0 && debug) std::cout << "V^-1/2:" << igtime << "s, ";
 
           #endif
-          
+
           
           // contract(1.0, Zxy, {1, 2, 3}, K, {1, 4}, 0.0, xyK, {2, 3, 4});
           // Tensor3D xyK = Zxy.contract(K,aidx_00); 
@@ -966,27 +969,54 @@ void compute_2bf(ExecutionContext& ec, const libint2::BasisSet& obs,
       
         Scheduler sch{ec};
         auto ig1 = std::chrono::high_resolution_clock::now();
+        auto tig1 = ig1;
 
         Tensor<TensorType> Jtmp_tamm{tdfAO}; //ndf
         Tensor<TensorType> xiK_tamm{tAO,tdfCocc,tdfAO}; //n, nocc, ndf
       
         eigen_to_tamm_tensor(C_occ_tamm,C_occ);
+
+        auto ig2 = std::chrono::high_resolution_clock::now();
+        auto igtime =
+        std::chrono::duration_cast<std::chrono::duration<double>>((ig2 - ig1)).count();
+        ec.pg().barrier();
+        if(rank == 0 && debug) std::cout << " C_occ_tamm <- C_occ:" << igtime << "s, ";
+
+        ig1 = std::chrono::high_resolution_clock::now();
         // contract(1.0, xyK, {1, 2, 3}, Co, {2, 4}, 0.0, xiK, {1, 4, 3});
         sch.allocate(xiK_tamm,Jtmp_tamm)
-        (xiK_tamm(mu,dCocc_til,d_mu) = xyK_tamm(mu,nu,d_mu) * C_occ_tamm(nu, dCocc_til));
+        (xiK_tamm(mu,dCocc_til,d_mu) = xyK_tamm(mu,nu,d_mu) * C_occ_tamm(nu, dCocc_til)).execute();
 
+         ig2 = std::chrono::high_resolution_clock::now();
+         igtime =
+        std::chrono::duration_cast<std::chrono::duration<double>>((ig2 - ig1)).count();
+        if(rank == 0 && debug) std::cout << " xiK_tamm:" << igtime << "s, ";
+
+        ig1 = std::chrono::high_resolution_clock::now();
         // compute Coulomb
         // contract(1.0, xiK, {1, 2, 3}, Co, {1, 2}, 0.0, Jtmp, {3});
         // Jtmp = xiK.contract(Co,idx_0011); 
-        sch(Jtmp_tamm(d_mu) = xiK_tamm(mu,dCocc_til,d_mu) * C_occ_tamm(mu,dCocc_til));
+        sch(Jtmp_tamm(d_mu) = xiK_tamm(mu,dCocc_til,d_mu) * C_occ_tamm(mu,dCocc_til)).execute();
 
+         ig2 = std::chrono::high_resolution_clock::now();
+         igtime =
+        std::chrono::duration_cast<std::chrono::duration<double>>((ig2 - ig1)).count();
+        if(rank == 0 && debug) std::cout << " Jtmp_tamm:" << igtime << "s, ";
+
+        ig1 = std::chrono::high_resolution_clock::now();
         // contract(1.0, xiK, {1, 2, 3}, xiK, {4, 2, 3}, 0.0, G, {1, 4});
         // Tensor2D K_ret = xiK.contract(xiK,idx_1122); 
         // xiK.resize(0, 0, 0);
         sch
         (F1tmp1(mu,ku) += -1.0 * xiK_tamm(mu,dCocc_til,d_mu) * xiK_tamm(ku,dCocc_til,d_mu))
-        .deallocate(xiK_tamm);
+        .deallocate(xiK_tamm).execute();
 
+         ig2 = std::chrono::high_resolution_clock::now();
+         igtime =
+        std::chrono::duration_cast<std::chrono::duration<double>>((ig2 - ig1)).count();
+        if(rank == 0 && debug) std::cout << " F1tmp1:" << igtime << "s, ";
+
+        ig1 = std::chrono::high_resolution_clock::now();
         //contract(2.0, xyK, {1, 2, 3}, Jtmp, {3}, -1.0, G, {1, 2});
         // Tensor2D J_ret = xyK.contract(Jtmp,aidx_20);
         sch
@@ -995,11 +1025,16 @@ void compute_2bf(ExecutionContext& ec, const libint2::BasisSet& obs,
         // (F1tmp1(mu,nu) = 2.0 * J_ret_tamm(mu,nu))
         // (F1tmp1(mu,nu) += -1.0 * K_ret_tamm(mu,nu)).execute();
 
-      auto ig2 = std::chrono::high_resolution_clock::now();
-      auto igtime =
-      std::chrono::duration_cast<std::chrono::duration<double>>((ig2 - ig1)).count();
+         ig2 = std::chrono::high_resolution_clock::now();
+         igtime =
+        std::chrono::duration_cast<std::chrono::duration<double>>((ig2 - ig1)).count();
+        if(rank == 0 && debug) std::cout << " F1tmp1:" << igtime << "s, ";
+        
+      auto tig2 = std::chrono::high_resolution_clock::now();
+      auto tigtime =
+      std::chrono::duration_cast<std::chrono::duration<double>>((tig2 - tig1)).count();
 
-    if(rank == 0 && debug) std::cout << "3c contractions:" << igtime << "s, ";
+    if(rank == 0 && debug) std::cout << "3c contractions:" << tigtime << "s, ";
 
     #endif
     } //end density fitting

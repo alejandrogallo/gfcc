@@ -834,7 +834,7 @@ void gfccsd_main_driver(std::string filename) {
     TAMM_SIZE freeze_core    = 0;
     TAMM_SIZE freeze_virtual = 0;
 
-    auto [options_map, ov_alpha, nao, hf_energy, shells, shell_tile_map, C_AO, F_AO, AO_opt, AO_tis] 
+    auto [options_map, ov_alpha, nao, hf_energy, shells, shell_tile_map, C_AO, F_AO, AO_opt, AO_tis, scf_conv] 
                     = hartree_fock_driver<T>(ec,filename);
 
     int nsranks = nao/15;
@@ -902,7 +902,7 @@ void gfccsd_main_driver(std::string filename) {
     TiledIndexSpace N = MO("all");
 
     auto [p_evl_sorted,d_t1,d_t2,d_r1,d_r2, d_r1s, d_r2s, d_t1s, d_t2s] 
-            = setupTensors(ec,MO,d_f1,ndiis,ccsd_restart && fs::exists(ccsdstatus));
+            = setupTensors(ec,MO,d_f1,ndiis,ccsd_restart && fs::exists(ccsdstatus) && scf_conv);
 
     if(ccsd_restart) {
         read_from_disk(d_f1,f1file);
@@ -936,7 +936,7 @@ void gfccsd_main_driver(std::string filename) {
     
     auto cc_t1 = std::chrono::high_resolution_clock::now();
 
-    ccsd_restart = ccsd_restart && fs::exists(ccsdstatus);
+    ccsd_restart = ccsd_restart && fs::exists(ccsdstatus) && scf_conv;
 
     double residual=0, corr_energy=0;
     if(ccsd_restart){

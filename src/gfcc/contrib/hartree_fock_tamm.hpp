@@ -20,9 +20,12 @@
 
 #include "hf_tamm_common.hpp"
 
+#include <filesystem>
+namespace fs = std::filesystem;
+
 #define SCF_THROTTLE_RESOURCES 1
 
-std::tuple<int, int, double, libint2::BasisSet, std::vector<size_t>, Tensor<double>, Tensor<double>, TiledIndexSpace, TiledIndexSpace> 
+std::tuple<int, int, double, libint2::BasisSet, std::vector<size_t>, Tensor<double>, Tensor<double>, TiledIndexSpace, TiledIndexSpace, bool> 
     hartree_fock(ExecutionContext &exc, const string filename,std::vector<libint2::Atom> atoms, OptionsMap options_map) {
 
     using libint2::Atom;
@@ -145,6 +148,11 @@ std::tuple<int, int, double, libint2::BasisSet, std::vector<size_t>, Tensor<doub
     TensorType ehf           = 0.0;
 
     exc.pg().barrier();
+
+    std::string scf_files_prefix = getfilename(filename) +
+        "." + scf_options.basis;
+    std::string scfstatusfile = scf_files_prefix + ".scfstatus";
+    const bool scf_conv = restart && fs::exists(scfstatusfile);
 
     #if SCF_THROTTLE_RESOURCES
   if (rank < hf_nranks) {
@@ -336,9 +344,9 @@ std::tuple<int, int, double, libint2::BasisSet, std::vector<size_t>, Tensor<doub
         std::cout << "\n\n";
         std::cout << " Hartree-Fock iterations" << endl;
         std::cout << std::string(70, '-') << endl;
-        std::cout <<
-            " Iter     Energy            E-Diff            RMSD            Time" 
-                << endl;
+        std::string  sph = " Iter     Energy            E-Diff            RMSD            Time";
+        if(scf_conv) sph = " Iter     Energy            E-Diff            Time";
+        std::cout << sph << endl;
         std::cout << std::string(70, '-') << endl;
     }
 
@@ -369,7 +377,7 @@ std::tuple<int, int, double, libint2::BasisSet, std::vector<size_t>, Tensor<doub
     #endif
                         iter, ndocc, X, F, C, C_occ, D,
                         S1, F1, H1, F1tmp1,FD_tamm, FDS_tamm, D_tamm, D_last_tamm, D_diff,
-                        ehf_tmp, ehf_tamm, diis_hist, fock_hist);
+                        ehf_tmp, ehf_tamm, diis_hist, fock_hist, scf_conv);
 
         // compute difference with last iteration
         ediff = ehf - ehf_last;
@@ -382,7 +390,7 @@ std::tuple<int, int, double, libint2::BasisSet, std::vector<size_t>, Tensor<doub
             std::cout << std::setw(5) << iter << "  " << std::setw(14);
             std::cout << std::fixed << std::setprecision(10) << ehf + enuc;
             std::cout << ' ' << std::setw(16)  << ediff;
-            std::cout << ' ' << std::setw(15)  << rmsd << ' ';
+            if(!scf_conv) std::cout << ' ' << std::setw(15)  << rmsd << ' ';
             std::cout << std::fixed << std::setprecision(2);
             std::cout << ' ' << std::setw(12)  << loop_time << ' ' << endl;
         }
@@ -395,7 +403,9 @@ std::tuple<int, int, double, libint2::BasisSet, std::vector<size_t>, Tensor<doub
             break;
         }
 
-    } while (((fabs(ediff) > conve) || (fabs(rmsd) > convd)));
+        if(scf_conv) break;
+
+    } while ( (fabs(ediff) > conve) || (fabs(rmsd) > convd) );
 
     // ec.pg().barrier(); 
     if(rank == 0) {
@@ -405,7 +415,7 @@ std::tuple<int, int, double, libint2::BasisSet, std::vector<size_t>, Tensor<doub
         else {
             cout << endl << std::string(50, '*') << endl;
             cout << std::string(10, ' ') << 
-                    "ERROR: HF Does not converge!!!" << endl;
+                    "ERROR: Hartree-Fock calculation does not converge!!!" << endl;
             cout << std::string(50, '*') << endl;
         }        
     }
@@ -417,14 +427,23 @@ std::tuple<int, int, double, libint2::BasisSet, std::vector<size_t>, Tensor<doub
     Tensor<TensorType>::deallocate(H1, S1, D_tamm, ehf_tmp, ehf_tamm); 
     Tensor<TensorType>::deallocate(F1tmp1, D_last_tamm, D_diff, FD_tamm, FDS_tamm);
 
-    if(!is_conv) {
-      nwx_terminate("Please check SCF input parameters");
+    if(rank==0 && !scf_conv) {
+     cout << "writing orbitals to file... ";
+     writeC(C,filename,scf_files_prefix);
+     cout << "done." << endl;
     }
 
-    if(rank==0 && !restart) {
-     cout << "writing orbitals to file... ";
-     writeC(C,filename,options_map);
-     cout << "done." << endl;
+    if(!is_conv) {
+      ec.pg().barrier();
+      nwx_terminate("Please check SCF input parameters");
+    }
+    else{
+        if(rank==0 && !scf_conv){
+          std::ofstream out(scfstatusfile, std::ios::out);
+          if(!out) cerr << "Error opening file " << scfstatusfile << endl;
+          out << 1 << std::endl;
+          out.close();
+        }    
     }
 
       if(rank == 0) tamm_to_eigen_tensor(F1,F);
@@ -473,7 +492,7 @@ std::tuple<int, int, double, libint2::BasisSet, std::vector<size_t>, Tensor<doub
     exc.pg().barrier();
 
     //F, C are not deallocated.
-    return std::make_tuple(ndocc, nao, ehf + enuc, shells, shell_tile_map, C_tamm, F_tamm, tAO, tAOt);
+    return std::make_tuple(ndocc, nao, ehf + enuc, shells, shell_tile_map, C_tamm, F_tamm, tAO, tAOt, scf_conv);
 }
 
 

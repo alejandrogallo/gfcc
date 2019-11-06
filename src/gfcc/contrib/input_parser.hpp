@@ -282,7 +282,7 @@ class OptionsMap
 
 
 void nwx_terminate(std::string msg){
-    if(GA_Nodeid()==0) std::cerr << msg << " ... terminating program.\n\n";
+    if(GA_Nodeid()==0) std::cout << msg << " ... terminating program.\n\n";
     GA_Terminate();
     MPI_Finalize();
     exit(0);

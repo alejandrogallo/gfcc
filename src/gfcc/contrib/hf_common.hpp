@@ -185,10 +185,8 @@ std::string getfilename(std::string filename){
   return fname.substr(fname.find_last_of("/")+1,fname.length());
 }
 
-void writeC(Matrix& C, std::string filename, OptionsMap options){
-  if(options.scf_options.restart) return;
-  std::string outputfile = getfilename(filename) +
-        "." + options.scf_options.basis + ".movecs";
+void writeC(Matrix& C, std::string filename, std::string scf_files_prefix){
+  std::string outputfile = scf_files_prefix + ".movecs";
   const auto N = C.rows();
   std::vector<TensorType> Cbuf(N*N);
   TensorType *Hbuf = Cbuf.data();
