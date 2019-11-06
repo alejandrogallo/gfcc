@@ -292,6 +292,31 @@ void fill_tensor(LabeledTensor<TensorType> ltensor,
     block_for(ec, ltensor, lambda);
 }
 
+
+template<typename TensorType>
+void fill_sparse_tensor(Tensor<TensorType> tensor,
+                 std::function<void(const IndexVector&, span<TensorType>)> func) {
+        fill_sparse_tensor(tensor(),func);
+}
+
+template<typename TensorType>
+void fill_sparse_tensor(LabeledTensor<TensorType> ltensor,
+                        std::function<void(const IndexVector&, span<TensorType>)> func) {
+    ExecutionContext& ec = get_ec(ltensor);
+    Tensor<TensorType> tensor = ltensor.tensor();
+
+    auto lambda = [&](const IndexVector& bid) {
+        const tamm::TAMM_SIZE dsize = tensor.block_size(bid);
+        const IndexVector blockid   = internal::translate_sparse_blockid(bid, ltensor);
+        std::vector<TensorType> dbuf(dsize);
+        // tensor.get(blockid, dbuf);
+        func(blockid,dbuf);
+        
+        tensor.put(bid, dbuf);
+    };
+    block_for(ec, ltensor, lambda);
+}
+
 template<typename TensorType>
 std::tuple<int, int> get_subgroup_info(ExecutionContext& gec, Tensor<TensorType> tensor, MPI_Comm &subcomm) {
 
@@ -804,7 +829,7 @@ TensorType norm(LabeledTensor<TensorType> ltensor) {
 template<typename TensorType>
 void gf_peak_coord(int nmodes, std::vector<TensorType> dbuf,
 std::vector<size_t> block_dims, std::vector<size_t> block_offset, 
-double threshold, int rank){
+double threshold, double x_norm_sq, int rank, std::ostringstream& spfe){
      size_t c          = 0;
 
         if(nmodes == 1) {
@@ -817,11 +842,11 @@ double threshold, int rank){
                     lv = std::real(val * std::conj(val));  
                 else lv = val * val;  
 
-                if(lv>threshold) {
-                    size_t x1    = i - block_offset[0];
-                    std::cout << "coordinates = (" << x1 << "), lv = " << lv << std::endl;
+                size_t x1    = i;
+                double weight = lv/x_norm_sq;
+		        if(weight>threshold)
+                    spfe << "   coord. = (" << x1 << "), wt. = " << weight << std::endl;
                 }
-            }
         } else if(nmodes == 2) {
             for(size_t i = block_offset[0]; i < block_offset[0] + block_dims[0];
                 i++) {
@@ -835,14 +860,15 @@ double threshold, int rank){
                     lv = std::real(val * std::conj(val));  
                 else lv = val * val;  
 
-                if(lv>threshold) {
-                    size_t x1    = i - block_offset[0];
-                    size_t x2    = j - block_offset[1];
-                    std::cout << "coordinates = (" << x1 << "," << x2 << "), lv = " << lv << std::endl;
-                }
+                size_t x1    = i;
+                size_t x2    = j;
+                double weight = lv/x_norm_sq;
+		        if(weight>threshold){
+                    spfe << "   coord. = (" << x1 << "," << x2 << "), wt. = " << weight << std::endl;
                     }
-                }
+		        }
             }
+        }
          else if(nmodes == 3) {
             for(size_t i = block_offset[0]; i < block_offset[0] + block_dims[0];
                 i++) {
@@ -858,13 +884,14 @@ double threshold, int rank){
                     lv = std::real(val * std::conj(val));  
                 else lv = val * val;  
 
-                if(lv>threshold) {
-                    size_t x1    = i - block_offset[0];
-                    size_t x2    = j - block_offset[1];
-                    size_t x3    = k - block_offset[2];
-                    std::cout << "coordinates = (" << x1 << "," << x2 << "," 
-                    << x3 << "), lv = " << lv << std::endl;
-                }
+                //if(lv>threshold) {
+                size_t x1    = i; 
+                size_t x2    = j; 
+                size_t x3    = k; 
+                double weight = lv/x_norm_sq;
+		        if(weight>threshold)
+                    spfe << "   coord. = (" << x1 << "," << x2 << "," 
+                    << x3 << "), wt. = " << weight << std::endl;
                     }
                 }
             }
@@ -885,14 +912,14 @@ double threshold, int rank){
                     lv = std::real(val * std::conj(val));  
                 else lv = val * val;  
 
-                if(lv>threshold) {
-                    size_t x1    = i - block_offset[0];
-                    size_t x2    = j - block_offset[1];
-                    size_t x3    = k - block_offset[2];
-                    size_t x4    = l - block_offset[3];
-                    std::cout << "coordinates = (" << x1 << "," << x2 << "," 
-                    << x3 << "," << x4 << "), lv = " << lv << std::endl;
-                }
+                size_t x1    = i;
+                size_t x2    = j;
+                size_t x3    = k;
+                size_t x4    = l;
+                double weight = lv/x_norm_sq;
+		        if(weight>threshold)
+                    spfe << "   coord. = (" << x1 << "," << x2 << "," 
+                    << x3 << "," << x4 << "), wt. = " << weight << std::endl;
 
                         }
                     }
@@ -917,32 +944,32 @@ double threshold, int rank){
                     lv = std::real(val * std::conj(val));  
                 else lv = val * val;  
 
-                if(lv>threshold) {
-                    size_t x1    = i - block_offset[0];
-                    size_t x2    = j - block_offset[1];
-                    size_t x3    = k - block_offset[2];
-                    size_t x4    = l - block_offset[3];
-                    size_t x5    = m - block_offset[3];
-                    std::cout << "coordinates = (" << x1 << "," << x2 << "," 
-                    << x3 << "," << x4 << "," << x5 << "), lv = " << lv << std::endl;
-                }
-
-                            }
+                // if(lv>threshold) {
+                size_t x1    = i;
+                size_t x2    = j;
+                size_t x3    = k;
+                size_t x4    = l;
+                size_t x5    = m;
+                double weight = lv/x_norm_sq;
+                if(weight>threshold) 
+                    spfe << "   coord. = (" << x1 << "," << x2 << "," 
+                    << x3 << "," << x4 << "," << x5 << "), wt. = " << weight << std::endl;
                         }
                     }
                 }
             }
         }
+    }
 
 }
 
 template<typename TensorType>
-void gf_peak(Tensor<TensorType> tensor, double threshold) {
-    return gf_peak(tensor(),threshold);
+void gf_peak(Tensor<TensorType> tensor, double threshold, double x_norm_sq, std::ostringstream& spfe) {
+    return gf_peak(tensor(),threshold,x_norm_sq,spfe);
 }
 
 template<typename TensorType>
-void gf_peak(LabeledTensor<TensorType> ltensor, double threshold) {
+void gf_peak(LabeledTensor<TensorType> ltensor, double threshold, double x_norm_sq, std::ostringstream& spfe) {
     ExecutionContext& gec = get_ec(ltensor);
 
     Tensor<TensorType> tensor = ltensor.tensor();
@@ -967,7 +994,7 @@ void gf_peak(LabeledTensor<TensorType> ltensor, double threshold) {
             auto block_dims   = tensor.block_dims(blockid);
             auto block_offset = tensor.block_offsets(blockid);
            
-            gf_peak_coord(nmodes,dbuf,block_dims,block_offset,threshold,rank);
+            gf_peak_coord(nmodes,dbuf,block_dims,block_offset,threshold,x_norm_sq,rank,spfe);
         };
         block_for(ec, ltensor, getnorm);
         ec.flush_and_sync();
