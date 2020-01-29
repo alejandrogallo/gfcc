@@ -12,5 +12,5 @@ FAQ entries at [FAQ.md](docs/FAQ.md)
 If you are referencing GFCCLib in a publication, please cite the following JCP paper:
 
 * Bo Peng, Karol Kowalski, Ajay Panyala and Sriram Krishnamoorthy,
-   [**Green’s function coupled cluster simulation of the near-valence ionizations of DNA-fragments**](https://doi.org/10.1063/1.5138658),
+   **Green’s function coupled cluster simulation of the near-valence ionizations of DNA-fragments**,
  *The Journal of Chemical Physics* 152, 011101 (2020) [DOI:10.1063/1.5138658](https://doi.org/10.1063/1.5138658).
