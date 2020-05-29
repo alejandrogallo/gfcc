@@ -10,6 +10,8 @@ if(NWX_CUDA)
     list(APPEND gfcc_DEPENDENCIES TALSH)
 endif()
 
+set(BUILD_METHODS OFF)
+
 set(gfcc_SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src/gfcc)
 set(gfcc_TEST_DIR ${CMAKE_CURRENT_SOURCE_DIR}/driver/)
 

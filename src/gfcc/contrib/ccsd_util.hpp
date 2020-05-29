@@ -1,7 +1,6 @@
 #ifndef TESTS_CCSD_UTIL_HPP_
 #define TESTS_CCSD_UTIL_HPP_
 
-// #include "cd_svd.hpp"
 #include "cd_svd_ga.hpp"
 #include "macdecls.h"
 #include "ga-mpi.h"
@@ -18,6 +17,12 @@ using Tensor4D   = Eigen::Tensor<double, 4, Eigen::RowMajor>;
   //         for(auto i = 0U; i < buf.size(); i++) buf[i] = 0; 
   //     }
   // };
+
+std::string getfilename(std::string filename){
+  size_t lastindex = filename.find_last_of(".");
+  auto fname = filename.substr(0,lastindex);
+  return fname.substr(fname.find_last_of("/")+1,fname.length());
+}
 
 template<typename TensorType>
 void update_r2(ExecutionContext& ec, 
@@ -68,14 +73,14 @@ std::string ccsd_test( int argc, char* argv[] )
 {
 
     if(argc<2){
-        std::cout << "Please provide an input file!\n";
+        std::cout << "Please provide an input file!" << std::endl;
         exit(0);
     }
 
     auto filename = std::string(argv[1]);
     std::ifstream testinput(filename); 
     if(!testinput){
-        std::cout << "Input file provided [" << filename << "] does not exist!\n";
+        std::cout << "Input file provided [" << filename << "] does not exist!" << std::endl;
         exit(0);
     }
 
@@ -114,13 +119,14 @@ void iteration_print_lambda(const ProcGroup& pg, int iter, double residual, doub
 template<typename T>
 std::pair<double,double> rest(ExecutionContext& ec,
                               const TiledIndexSpace& MO,
-                               Tensor<T>& d_r1,
-                               Tensor<T>& d_r2,
-                               Tensor<T>& d_t1,
-                               Tensor<T>& d_t2,
-                               Tensor<T>& de,
+                              Tensor<T>& d_r1,
+                              Tensor<T>& d_r2,
+                              Tensor<T>& d_t1,
+                              Tensor<T>& d_t2,
+                              Tensor<T>& de,
                               std::vector<T>& p_evl_sorted, T zshiftl, 
-                              const TAMM_SIZE& noab,bool transpose=false) {
+                              const TAMM_SIZE& noa,
+                              const TAMM_SIZE& nob, bool transpose=false) {
 
     T residual, energy;
     Scheduler sch{ec};
@@ -141,10 +147,10 @@ std::pair<double,double> rest(ExecutionContext& ec,
       };
 
       auto l1 =  [&]() {
-        jacobi(ec, d_r1, d_t1, -1.0 * zshiftl, transpose, p_evl_sorted,noab);
+        jacobi(ec, d_r1, d_t1, -1.0 * zshiftl, transpose, p_evl_sorted,noa,nob);
       };
       auto l2 = [&]() {
-        jacobi(ec, d_r2, d_t2, -2.0 * zshiftl, transpose, p_evl_sorted,noab);
+        jacobi(ec, d_r2, d_t2, -2.0 * zshiftl, transpose, p_evl_sorted,noa,nob);
       };
 
       l0();
@@ -156,58 +162,147 @@ std::pair<double,double> rest(ExecutionContext& ec,
     return {residual, energy};
 }
 
-std::tuple<TiledIndexSpace,TAMM_SIZE> setupMOIS(Tile tce_tile, TAMM_SIZE nao, TAMM_SIZE ov_alpha, TAMM_SIZE freeze_core, TAMM_SIZE freeze_virtual){
+template<typename T>
+std::pair<double,double> rest_cs(ExecutionContext& ec,
+                              const TiledIndexSpace& MO,
+                              Tensor<T>& d_r1,
+                              Tensor<T>& d_r2,
+                              Tensor<T>& d_t1,
+                              Tensor<T>& d_t2,
+                              Tensor<T>& de,
+                              std::vector<T>& p_evl_sorted, T zshiftl, 
+                              const TAMM_SIZE& noa,
+                              const TAMM_SIZE& nva, bool transpose=false) {
 
-    TAMM_SIZE ov_beta{nao - ov_alpha};
+    T residual, energy;
+    Scheduler sch{ec};
+    Tensor<T> d_r1_residual{}, d_r2_residual{};
+    Tensor<T>::allocate(&ec,d_r1_residual, d_r2_residual);
+    sch
+      (d_r1_residual() = d_r1()  * d_r1())
+      (d_r2_residual() = d_r2()  * d_r2())
+      .execute();
 
-    // std::cout << "ov_alpha,nao === " << ov_alpha << ":" << nao << std::endl;
-    std::vector<TAMM_SIZE> sizes = {ov_alpha - freeze_core, ov_alpha - freeze_core,
-             ov_beta - freeze_virtual, ov_beta - freeze_virtual};
+      auto l0 = [&]() {
+        T r1 = get_scalar(d_r1_residual);
+        T r2 = get_scalar(d_r2_residual);
+        r1 = 0.5*std::sqrt(r1);
+        r2 = 0.5*std::sqrt(r2);
+        energy = get_scalar(de);
+        residual = std::max(r1,r2);
+      };
 
-    const TAMM_SIZE total_orbitals = 2*ov_alpha+2*ov_beta - 2 * freeze_core - 2 * freeze_virtual;
+      auto l1 =  [&]() {
+        jacobi_cs(ec, d_r1, d_t1, -1.0 * zshiftl, transpose, p_evl_sorted,noa,nva);
+      };
+      auto l2 = [&]() {
+        jacobi_cs(ec, d_r2, d_t2, -2.0 * zshiftl, transpose, p_evl_sorted,noa,nva);
+      };
+
+      l0();
+      l1();
+      l2();
+
+      Tensor<T>::deallocate(d_r1_residual, d_r2_residual);
+      
+    return {residual, energy};
+}
+
+std::tuple<TiledIndexSpace,TAMM_SIZE> setupMOIS(SystemData sys_data, bool triples=false) {
+  
+    // TAMM_SIZE nao = sys_data.nbf;
+    TAMM_SIZE n_occ_alpha = sys_data.n_occ_alpha;
+    TAMM_SIZE n_occ_beta = sys_data.n_occ_beta;
+    TAMM_SIZE freeze_core = sys_data.n_frozen_core;
+    TAMM_SIZE freeze_virtual = sys_data.n_frozen_virtual;
+
+    Tile tce_tile = sys_data.options_map.ccsd_options.tilesize;
+    if(!triples) {
+      if ((tce_tile < static_cast<Tile>(sys_data.nbf/10) || tce_tile < 50) && !sys_data.options_map.ccsd_options.force_tilesize) {
+        tce_tile = static_cast<Tile>(sys_data.nbf/10);
+        if(tce_tile < 50) tce_tile = 50; //50 is the default tilesize for CCSD.
+        if(GA_Nodeid()==0) std::cout << std::endl << "Resetting CCSD tilesize to: " << tce_tile << std::endl;
+      }
+    }
+    else tce_tile = sys_data.options_map.ccsd_options.ccsdt_tilesize;
+
+    TAMM_SIZE nmo = sys_data.nmo;
+    TAMM_SIZE n_vir_alpha = sys_data.n_vir_alpha;
+    TAMM_SIZE n_vir_beta = sys_data.n_vir_beta;
+    TAMM_SIZE nocc = sys_data.nocc;
+    // TAMM_SIZE nvab = n_vir_alpha+n_vir_beta;
+
+    // std::cout << "n_occ_alpha,nao === " << n_occ_alpha << ":" << nao << std::endl;
+    std::vector<TAMM_SIZE> sizes = {n_occ_alpha - freeze_core, n_occ_beta - freeze_core,
+             n_vir_alpha - freeze_virtual, n_vir_beta - freeze_virtual};
+
+    const TAMM_SIZE total_orbitals = nmo - 2 * freeze_core - 2 * freeze_virtual;
     
     // cout << "total orb = " <<total_orbitals << endl;
-    // cout << "oab = " << ov_alpha << endl;
+    // cout << "oab = " << n_occ_alpha << endl;
     // cout << "vab = " << ov_beta << endl;
 
     // Construction of tiled index space MO
     IndexSpace MO_IS{range(0, total_orbitals),
                     {
-                     {"occ", {range(0, 2*ov_alpha)}},
-                     {"virt", {range(2*ov_alpha, total_orbitals)}}
+                     {"occ", {range(0, nocc)}},
+                     {"occ_alpha", {range(0, n_occ_alpha)}},
+                     {"occ_beta", {range(n_occ_alpha, nocc)}},
+                     {"virt", {range(nocc, total_orbitals)}},
+                     {"virt_alpha", {range(nocc,nocc+n_vir_alpha)}},
+                     {"virt_beta", {range(nocc+n_vir_alpha, total_orbitals)}},                     
                     },
                      { 
-                      {Spin{1}, {range(0, ov_alpha), range(2*ov_alpha,2*ov_alpha+ov_beta)}},
-                      {Spin{2}, {range(ov_alpha, 2*ov_alpha), range(2*ov_alpha+ov_beta, total_orbitals)}} 
+                      {Spin{1}, {range(0, n_occ_alpha), range(nocc,nocc+n_vir_alpha)}},
+                      {Spin{2}, {range(n_occ_alpha, nocc), range(nocc+n_vir_alpha, total_orbitals)}} 
                      }
                      };
 
     std::vector<Tile> mo_tiles;
     
-    tamm::Tile est_nt = ov_alpha/tce_tile;
-    tamm::Tile last_tile = ov_alpha%tce_tile;
-    for (tamm::Tile x=0;x<est_nt;x++)mo_tiles.push_back(tce_tile);
-    if(last_tile>0) mo_tiles.push_back(last_tile);
-    for (tamm::Tile x=0;x<est_nt;x++) mo_tiles.push_back(tce_tile);
-    if(last_tile>0) mo_tiles.push_back(last_tile);
+    if(!sys_data.options_map.ccsd_options.balance_tiles) {
+      tamm::Tile est_nt = n_occ_alpha/tce_tile;
+      tamm::Tile last_tile = n_occ_alpha%tce_tile;
+      for (tamm::Tile x=0;x<est_nt;x++)mo_tiles.push_back(tce_tile);
+      if(last_tile>0) mo_tiles.push_back(last_tile);
+      est_nt = n_occ_beta/tce_tile;
+      last_tile = n_occ_beta%tce_tile;
+      for (tamm::Tile x=0;x<est_nt;x++) mo_tiles.push_back(tce_tile);
+      if(last_tile>0) mo_tiles.push_back(last_tile);
 
-    est_nt = ov_beta/tce_tile;
-    last_tile = ov_beta%tce_tile;
-    for (tamm::Tile x=0;x<est_nt;x++) mo_tiles.push_back(tce_tile);
-    if(last_tile>0) mo_tiles.push_back(last_tile);
-    for (tamm::Tile x=0;x<est_nt;x++) mo_tiles.push_back(tce_tile);
-    if(last_tile>0) mo_tiles.push_back(last_tile);
+      est_nt = n_vir_alpha/tce_tile;
+      last_tile = n_vir_alpha%tce_tile;
+      for (tamm::Tile x=0;x<est_nt;x++) mo_tiles.push_back(tce_tile);
+      if(last_tile>0) mo_tiles.push_back(last_tile);
+      est_nt = n_vir_beta/tce_tile;
+      last_tile = n_vir_beta%tce_tile;    
+      for (tamm::Tile x=0;x<est_nt;x++) mo_tiles.push_back(tce_tile);
+      if(last_tile>0) mo_tiles.push_back(last_tile);
+    }
+    else {
+      tamm::Tile est_nt = static_cast<tamm::Tile>(std::ceil(1.0 * n_occ_alpha / tce_tile));
+      for (tamm::Tile x=0;x<est_nt;x++) mo_tiles.push_back(n_occ_alpha / est_nt + (x<(n_occ_alpha % est_nt)));
+
+      est_nt = static_cast<tamm::Tile>(std::ceil(1.0 * n_occ_beta / tce_tile));
+      for (tamm::Tile x=0;x<est_nt;x++) mo_tiles.push_back(n_occ_beta / est_nt + (x<(n_occ_beta % est_nt)));
+
+      est_nt = static_cast<tamm::Tile>(std::ceil(1.0 * n_vir_alpha / tce_tile));
+      for (tamm::Tile x=0;x<est_nt;x++) mo_tiles.push_back(n_vir_alpha / est_nt + (x<(n_vir_alpha % est_nt)));
+
+      est_nt = static_cast<tamm::Tile>(std::ceil(1.0 * n_vir_beta / tce_tile));
+      for (tamm::Tile x=0;x<est_nt;x++) mo_tiles.push_back(n_vir_beta / est_nt + (x<(n_vir_beta % est_nt)));
+    }
 
     // cout << "mo-tiles=" << mo_tiles << endl;
 
     // IndexSpace MO_IS{range(0, total_orbitals),
-    //                 {{"occ", {range(0, ov_alpha+ov_beta)}}, //0-7
+    //                 {{"occ", {range(0, n_occ_alpha+ov_beta)}}, //0-7
     //                  {"virt", {range(total_orbitals/2, total_orbitals)}}, //7-14
-    //                  {"alpha", {range(0, ov_alpha),range(ov_alpha+ov_beta,2*ov_alpha+ov_beta)}}, //0-5,7-12
-    //                  {"beta", {range(ov_alpha,ov_alpha+ov_beta), range(2*ov_alpha+ov_beta,total_orbitals)}} //5-7,12-14   
+    //                  {"alpha", {range(0, n_occ_alpha),range(n_occ_alpha+ov_beta,2*n_occ_alpha+ov_beta)}}, //0-5,7-12
+    //                  {"beta", {range(n_occ_alpha,n_occ_alpha+ov_beta), range(2*n_occ_alpha+ov_beta,total_orbitals)}} //5-7,12-14   
     //                  }};
 
-    // const unsigned int ova = static_cast<unsigned int>(ov_alpha);
+    // const unsigned int ova = static_cast<unsigned int>(n_occ_alpha);
     // const unsigned int ovb = static_cast<unsigned int>(ov_beta);
     TiledIndexSpace MO{MO_IS, mo_tiles}; //{ova,ova,ovb,ovb}};
 
@@ -215,9 +310,9 @@ std::tuple<TiledIndexSpace,TAMM_SIZE> setupMOIS(Tile tce_tile, TAMM_SIZE nao, TA
 }
 
 template<typename T>
-std::tuple<std::vector<T>, Tensor<T>,Tensor<T>,Tensor<T>,Tensor<T>,
+std::tuple<std::vector<T>,Tensor<T>,Tensor<T>,Tensor<T>,Tensor<T>,
 std::vector<Tensor<T>>,std::vector<Tensor<T>>,std::vector<Tensor<T>>,std::vector<Tensor<T>>>
- setupTensors(ExecutionContext& ec, TiledIndexSpace& MO, Tensor<T> d_f1, size_t ndiis, bool ccsd_restart=false) {
+ setupTensors(ExecutionContext& ec, TiledIndexSpace& MO, Tensor<T> d_f1, int ndiis, bool ccsd_restart=false) {
 
     auto rank = ec.pg().rank();
 
@@ -235,7 +330,7 @@ std::vector<Tensor<T>>,std::vector<Tensor<T>>,std::vector<Tensor<T>>,std::vector
     update_tensor(d_f1(),lambda2);
 
  if(rank == 0) {
-    std::cout << "\n\n";
+    std::cout << std::endl << std::endl;
     std::cout << " CCSD iterations" << std::endl;
     std::cout << std::string(66, '-') << std::endl;
     std::cout <<
@@ -273,17 +368,86 @@ std::vector<Tensor<T>>,std::vector<Tensor<T>>,std::vector<Tensor<T>>,std::vector
 }
 
 template<typename T>
-std::tuple<OptionsMap, TAMM_SIZE, TAMM_SIZE, double, 
-  libint2::BasisSet, std::vector<size_t>, Tensor<T>, Tensor<T>, TiledIndexSpace, TiledIndexSpace,bool> 
+std::tuple<std::vector<T>, Tensor<T>,Tensor<T>,Tensor<T>,Tensor<T>,
+std::vector<Tensor<T>>,std::vector<Tensor<T>>,std::vector<Tensor<T>>,std::vector<Tensor<T>>>
+ setupTensors_cs(ExecutionContext& ec, TiledIndexSpace& MO, Tensor<T> d_f1, int ndiis, bool ccsd_restart=false) {
+
+    auto rank = ec.pg().rank();
+
+    const TiledIndexSpace &O = MO("occ");
+    const TiledIndexSpace &V = MO("virt");
+    
+    const int otiles = O.num_tiles();
+    const int vtiles = V.num_tiles();
+    const int oatiles = MO("occ_alpha").num_tiles();
+    const int obtiles = MO("occ_beta").num_tiles();
+    const int vatiles = MO("virt_alpha").num_tiles();
+    const int vbtiles = MO("virt_beta").num_tiles();
+
+    TiledIndexSpace o_alpha,v_alpha,o_beta,v_beta;
+    o_alpha = {MO("occ"), range(oatiles)};
+    v_alpha = {MO("virt"), range(vatiles)};
+    o_beta = {MO("occ"), range(obtiles,otiles)};
+    v_beta = {MO("virt"), range(vbtiles,vtiles)};
+ 
+    std::vector<T> p_evl_sorted = tamm::diagonal(d_f1);
+
+    auto lambda2 = [&](const IndexVector& blockid, span<T> buf){
+        if(blockid[0] != blockid[1]) {
+            for(auto i = 0U; i < buf.size(); i++) buf[i] = 0; 
+        }
+    };
+
+    update_tensor(d_f1(),lambda2);
+
+ if(rank == 0) {
+    std::cout << std::endl << std::endl;
+    std::cout << " CCSD iterations" << std::endl;
+    std::cout << std::string(66, '-') << std::endl;
+    std::cout <<
+        " Iter          Residuum       Correlation     Cpu    Wall    V2*C2"
+              << std::endl;
+    std::cout << std::string(66, '-') << std::endl;
+  }
+   
+  std::vector<Tensor<T>> d_r1s, d_r2s, d_t1s, d_t2s;
+  Tensor<T> d_r1{{v_alpha,o_alpha},{1,1}};
+  Tensor<T> d_r2{{v_alpha,v_beta,o_alpha,o_beta},{2,2}};
+
+  if(!ccsd_restart){
+    for(decltype(ndiis) i=0; i<ndiis; i++) {
+      d_r1s.push_back(Tensor<T>{{v_alpha,o_alpha},{1,1}});
+      d_r2s.push_back(Tensor<T>{{v_alpha,v_beta,o_alpha,o_beta},{2,2}});
+      d_t1s.push_back(Tensor<T>{{v_alpha,o_alpha},{1,1}});
+      d_t2s.push_back(Tensor<T>{{v_alpha,v_beta,o_alpha,o_beta},{2,2}});
+      Tensor<T>::allocate(&ec,d_r1s[i], d_r2s[i], d_t1s[i], d_t2s[i]);
+    }
+    Tensor<T>::allocate(&ec,d_r1,d_r2);
+  }
+
+  Tensor<T> d_t1{{v_alpha,o_alpha},{1,1}};
+  Tensor<T> d_t2{{v_alpha,v_beta,o_alpha,o_beta},{2,2}};
+
+  Tensor<T>::allocate(&ec,d_t1,d_t2);
+
+  Scheduler{ec}   
+  (d_t1() = 0)
+  (d_t2() = 0)
+  .execute();
+  
+  return std::make_tuple(p_evl_sorted,d_t1,d_t2,d_r1,d_r2, d_r1s, d_r2s, d_t1s, d_t2s);
+}
+
+template<typename T>
+std::tuple<SystemData, double, 
+  libint2::BasisSet, std::vector<size_t>, Tensor<T>, Tensor<T>, Tensor<T>, Tensor<T>, TiledIndexSpace, TiledIndexSpace,bool> 
     hartree_fock_driver(ExecutionContext &ec, const string filename) {
 
     auto rank = ec.pg().rank();
-    TAMM_SIZE ov_alpha{0};
     double hf_energy{0.0};
     libint2::BasisSet shells;
-    TAMM_SIZE nao{0};
-    Tensor<T> C_AO;
-    Tensor<T> F_AO;
+    Tensor<T> C_AO, C_beta_AO;
+    Tensor<T> F_AO, F_beta_AO;
     TiledIndexSpace tAO; //Fixed Tilesize AO
     TiledIndexSpace tAOt; //original AO TIS
     std::vector<size_t> shell_tile_map;
@@ -294,24 +458,31 @@ std::tuple<OptionsMap, TAMM_SIZE, TAMM_SIZE, double,
     std::vector<Atom> atoms;
     OptionsMap options_map;
     std::tie(atoms, options_map) = read_input_nwx(is);
+    if(options_map.options.output_file_prefix.empty()) 
+      options_map.options.output_file_prefix = getfilename(filename);
+    
+    SystemData sys_data{options_map, options_map.scf_options.scf_type};
 
     auto hf_t1 = std::chrono::high_resolution_clock::now();
 
-    std::tie(ov_alpha, nao, hf_energy, shells, shell_tile_map, C_AO, F_AO, tAO, tAOt, scf_conv) = hartree_fock(ec, filename, atoms, options_map);
+    std::tie(sys_data, hf_energy, shells, shell_tile_map, C_AO, F_AO, C_beta_AO, F_beta_AO, tAO, tAOt,scf_conv) = hartree_fock(ec, filename, atoms, options_map);
+    sys_data.input_molecule = getfilename(filename);
+    sys_data.output_file_prefix = options_map.options.output_file_prefix;
+
     auto hf_t2 = std::chrono::high_resolution_clock::now();
 
     double hf_time =
       std::chrono::duration_cast<std::chrono::duration<double>>((hf_t2 - hf_t1)).count();
-    if(rank == 0) std::cout << "\nTime taken for Hartree-Fock: " << hf_time << " secs\n";
+    if(rank == 0) std::cout << std::endl << "Time taken for Hartree-Fock: " << hf_time << " secs" << std::endl;
 
-    return std::make_tuple(options_map,ov_alpha, nao, hf_energy, shells, shell_tile_map, C_AO, F_AO, tAO, tAOt, scf_conv);
+    return std::make_tuple(sys_data, hf_energy, shells, shell_tile_map, C_AO, F_AO, C_beta_AO, F_beta_AO, tAO, tAOt, scf_conv);
 }
 
 #if 0
 template<typename T> 
 std::tuple<Tensor<T>,Tensor<T>,TAMM_SIZE, tamm::Tile>  cd_svd_driver(OptionsMap options_map,
  ExecutionContext& ec, TiledIndexSpace& MO, TiledIndexSpace& AO_tis,
-  const TAMM_SIZE ov_alpha, const TAMM_SIZE nao, const TAMM_SIZE freeze_core,
+  const TAMM_SIZE n_occ_alpha, const TAMM_SIZE nao, const TAMM_SIZE freeze_core,
   const TAMM_SIZE freeze_virtual, Tensor<TensorType> C_AO, Tensor<TensorType> F_AO,
   libint2::BasisSet& shells, std::vector<size_t>& shell_tile_map){
 
@@ -332,14 +503,14 @@ std::tuple<Tensor<T>,Tensor<T>,TAMM_SIZE, tamm::Tile>  cd_svd_driver(OptionsMap 
     TAMM_SIZE chol_count = 0;
 
     //std::tie(V2) = 
-    Tensor<T> cholVpr = cd_svd(ec, MO, AO_tis, ov_alpha, nao, freeze_core, freeze_virtual,
+    Tensor<T> cholVpr = cd_svd(ec, MO, AO_tis, n_occ_alpha, nao, freeze_core, freeze_virtual,
                                 C_AO, F_AO, d_f1, chol_count, max_cvecs, diagtol, shells, shell_tile_map);
     auto hf_t2        = std::chrono::high_resolution_clock::now();
     double cd_svd_time =
       std::chrono::duration_cast<std::chrono::duration<double>>((hf_t2 - hf_t1)).count();
 
-    if(rank == 0) std::cout << "\nTotal Time taken for CD (+SVD): " << cd_svd_time
-              << " secs\n";
+    if(rank == 0) std::cout << std::endl << "Total Time taken for CD (+SVD): " << cd_svd_time
+              << " secs" << std::endl;
 
     Tensor<T>::deallocate(C_AO,F_AO);
 
@@ -429,7 +600,7 @@ setupLambdaTensors(ExecutionContext& ec, TiledIndexSpace& MO, size_t ndiis) {
     .execute();
 
   if(rank == 0) {
-    std::cout << "\n\n";
+    std::cout << std::endl << std::endl;
     std::cout << " Lambda CCSD iterations" << std::endl;
     std::cout << std::string(44, '-') << std::endl;
     std::cout <<
@@ -457,9 +628,9 @@ setupLambdaTensors(ExecutionContext& ec, TiledIndexSpace& MO, size_t ndiis) {
 template<typename T>
 Tensor<T> setupV2(ExecutionContext& ec, TiledIndexSpace& MO, TiledIndexSpace& CI,
                   Tensor<T> cholVpr, const tamm::Tile chol_count, 
-                  const TAMM_SIZE total_orbitals, TAMM_SIZE n_alpha, TAMM_SIZE n_beta) {
+                  ExecutionHW hw = ExecutionHW::CPU) {
 
-    // auto rank = ec.pg().rank();
+    auto rank = ec.pg().rank();
 
     TiledIndexSpace N = MO("all");
     auto [cindex] = CI.labels<1>("all");
@@ -471,11 +642,17 @@ Tensor<T> setupV2(ExecutionContext& ec, TiledIndexSpace& MO, TiledIndexSpace& CI
     Tensor<T> d_v2{{N,N,N,N},{2,2}};
     Tensor<T>::allocate(&ec,d_a2,d_v2);
 
-    Scheduler{ec}(d_a2(p, q, r, s) = cholVpr(p, r, cindex) * cholVpr(q, s, cindex)).execute();
+    auto cc_t1 = std::chrono::high_resolution_clock::now();
 
-    Scheduler{ec}(d_v2(p, q, r, s) = d_a2(p,q,r,s))
-                  (d_v2(p, q, r, s) -= d_a2(p,q,s,r))
-                  .execute();
+    Scheduler{ec}(d_a2(p, q, r, s) = cholVpr(p, r, cindex) * cholVpr(q, s, cindex))
+                 (d_v2(p, q, r, s) = d_a2(p,q,r,s))
+                 (d_v2(p, q, r, s) -= d_a2(p,q,s,r))
+                 .execute(hw);
+
+    auto cc_t2 = std::chrono::high_resolution_clock::now();
+    double v2_time = 
+        std::chrono::duration_cast<std::chrono::duration<double>>((cc_t2 - cc_t1)).count();
+    if(rank == 0) std::cout << std::endl << "Time to reconstruct V2: " << v2_time << " secs" << std::endl;
 
     Tensor<T>::deallocate(d_a2);
     return d_v2;
@@ -483,10 +660,10 @@ Tensor<T> setupV2(ExecutionContext& ec, TiledIndexSpace& MO, TiledIndexSpace& CI
  #if 0
       auto chol_dims = CholVpr.dimensions();
   auto chol_count = chol_dims[2];
-    auto ndocc = ov_alpha;
-    auto ov_alpha_freeze = ndocc - freeze_core;
+    auto ndocc = n_occ_alpha;
+    auto n_occ_alpha_freeze = ndocc - freeze_core;
     auto ov_beta_freeze  = nao - ndocc - freeze_virtual;
-  const int n_alpha = ov_alpha_freeze;
+  const int n_alpha = n_occ_alpha_freeze;
   const int n_beta = ov_beta_freeze;
   // buf[0] points to the target shell set after every call  to engine.compute()
   // const auto &buf = engine.results();
@@ -523,7 +700,7 @@ Tensor<T> setupV2(ExecutionContext& ec, TiledIndexSpace& MO, TiledIndexSpace& CI
               A2(p, r, q, s) += CholVpr(p, r, icount) * CholVpr(q, s, icount);
               //V2_FromCholV(p, r, q, s) += CholVpr(p, r, icount) * CholVpr(q, s, icount);
             }
-            //cout << p << " " << r << " " << q << " " << s << " " << V2_unfused(p, r, q, s) << "\n" << endl;
+            //cout << p << " " << r << " " << q << " " << s << " " << V2_unfused(p, r, q, s) << endl << endl;
           }
         }
       }
@@ -544,17 +721,16 @@ Tensor<T> setupV2(ExecutionContext& ec, TiledIndexSpace& MO, TiledIndexSpace& CI
 }
 
 template<typename T> 
-std::tuple<Tensor<T>,Tensor<T>,TAMM_SIZE, tamm::Tile, TiledIndexSpace>  cd_svd_ga_driver(OptionsMap options_map,
- ExecutionContext& ec, TiledIndexSpace& MO, TiledIndexSpace& AO_tis,
-  const TAMM_SIZE ov_alpha, const TAMM_SIZE nao, const TAMM_SIZE freeze_core,
-  const TAMM_SIZE freeze_virtual, Tensor<TensorType> C_AO, Tensor<TensorType> F_AO,
-  libint2::BasisSet& shells, std::vector<size_t>& shell_tile_map, bool readv2=false, std::string cholfile=""){
+std::tuple<Tensor<T>,Tensor<T>,TAMM_SIZE, tamm::Tile, TiledIndexSpace>  cd_svd_ga_driver(SystemData& sys_data,
+  ExecutionContext& ec, TiledIndexSpace& MO, TiledIndexSpace& AO_tis,
+  Tensor<TensorType> C_AO, Tensor<TensorType> F_AO, Tensor<TensorType> C_beta_AO, Tensor<TensorType> F_beta_AO, libint2::BasisSet& shells, 
+  std::vector<size_t>& shell_tile_map, bool readv2=false, std::string cholfile=""){
 
-    CDOptions cd_options = options_map.cd_options;
+    CDOptions cd_options = sys_data.options_map.cd_options;
     auto diagtol = cd_options.diagtol; // tolerance for the max. diagonal
     cd_options.max_cvecs_factor = 2 * std::abs(std::log10(diagtol));
     //TODO
-    tamm::Tile max_cvecs = cd_options.max_cvecs_factor * nao;
+    tamm::Tile max_cvecs = cd_options.max_cvecs_factor * sys_data.nbf;
 
 
     std::cout << std::defaultfloat;
@@ -572,11 +748,11 @@ std::tuple<Tensor<T>,Tensor<T>,TAMM_SIZE, tamm::Tile, TiledIndexSpace>  cd_svd_g
     //std::tie(V2) = 
     Tensor<T> cholVpr;
 
-    auto itile_size = options_map.ccsd_options.itilesize;
-    
+    auto itile_size = sys_data.options_map.ccsd_options.itilesize;
+
     if(!readv2) {
-      cholVpr = cd_svd_ga(ec, MO, AO_tis, ov_alpha, nao, freeze_core, freeze_virtual, itile_size,
-                          C_AO, F_AO, d_f1, chol_count, max_cvecs, diagtol, shells, shell_tile_map);
+      cholVpr = cd_svd_ga(sys_data, ec, MO, AO_tis,
+                          C_AO, F_AO, C_beta_AO,F_beta_AO, d_f1, chol_count, max_cvecs, shells, shell_tile_map);
     }
     else{
       std::ifstream in(cholfile, std::ios::in);
@@ -599,13 +775,17 @@ std::tuple<Tensor<T>,Tensor<T>,TAMM_SIZE, tamm::Tile, TiledIndexSpace>  cd_svd_g
     double cd_svd_time =
       std::chrono::duration_cast<std::chrono::duration<double>>((hf_t2 - hf_t1)).count();
 
-    if(rank == 0) std::cout << "\nTotal Time taken for CD (+SVD): " << cd_svd_time
-              << " secs\n";
+    if(rank == 0) std::cout << std::endl << "Total Time taken for CD (+SVD): " << cd_svd_time
+              << " secs" << std::endl;
 
     Tensor<T>::deallocate(C_AO,F_AO);
+    if(sys_data.scf_type == sys_data.SCFType::uhf) Tensor<T>::deallocate(C_beta_AO,F_beta_AO);
 
     IndexSpace chol_is{range(0,chol_count)};
     TiledIndexSpace CI{chol_is,static_cast<tamm::Tile>(itile_size)}; 
+
+    sys_data.num_chol_vectors = chol_count;
+    if(rank == 0) sys_data.print();
 
     return std::make_tuple(cholVpr, d_f1, chol_count, max_cvecs, CI);
 }

@@ -80,6 +80,11 @@ class MemoryManagerLocal : public MemoryManager {
     return ret;
   }
 
+  MemoryRegion* alloc_coll_balanced(ElementType eltype,
+                                    Size nelements) override {
+    return alloc_coll(eltype, nelements);
+  }
+
   /**
    * @copydoc MemoryManager::attach_coll
    */
@@ -101,15 +106,17 @@ class MemoryManagerLocal : public MemoryManager {
     //no-op
   }
 
+  ~MemoryManagerLocal() {}
+
   protected:
   explicit MemoryManagerLocal(ProcGroup pg)
-      : MemoryManager{pg} {
+      : MemoryManager{pg, MemoryManagerKind::local} {
     //sequential. So process group size should be 1
     EXPECTS(pg.is_valid());
     EXPECTS(pg_.size() == 1);
   }
 
-  ~MemoryManagerLocal() {}
+
 
 public:
    /**
@@ -151,9 +158,33 @@ public:
   }
 
   /**
+   * @copydoc MemoryManager::nb_get
+   */
+  void nb_get(MemoryRegion& mpb, Proc proc, Offset off, Size nelements, void* to_buf, DataCommunicationHandlePtr data_comm_handle) override {
+    MemoryRegionLocal& mp = static_cast<MemoryRegionLocal&>(mpb);
+    EXPECTS(proc.value() == 0);
+    EXPECTS(mp.buf_ != nullptr);
+    std::copy_n(mp.buf_ + mp.elsize_ * off.value(),
+                mp.elsize_*nelements.value(),
+                reinterpret_cast<uint8_t*>(to_buf));
+  }
+
+  /**
    * @copydoc MemoryManager::put
    */
   void put(MemoryRegion& mpb, Proc proc, Offset off, Size nelements, const void* from_buf) override {
+    MemoryRegionLocal& mp = static_cast<MemoryRegionLocal&>(mpb);
+    EXPECTS(proc.value() == 0);
+    EXPECTS(mp.buf_ != nullptr);
+    std::copy_n(reinterpret_cast<const uint8_t*>(from_buf),
+                mp.elsize_*nelements.value(),
+                mp.buf_ + mp.elsize_*off.value());
+  }
+
+  /**
+   * @copydoc MemoryManager::nb_put
+   */
+  void nb_put(MemoryRegion& mpb, Proc proc, Offset off, Size nelements, const void* from_buf, DataCommunicationHandlePtr data_comm_handle) override {
     MemoryRegionLocal& mp = static_cast<MemoryRegionLocal&>(mpb);
     EXPECTS(proc.value() == 0);
     EXPECTS(mp.buf_ != nullptr);
@@ -198,6 +229,41 @@ public:
   }
 
   /**
+   * @copydoc MemoryManager::nb_add
+   */
+  void nb_add(MemoryRegion& mpb, Proc proc, Offset off, Size nelements, const void* from_buf, DataCommunicationHandlePtr data_comm_handle) override {
+    MemoryRegionLocal& mp = static_cast<MemoryRegionLocal&>(mpb);
+    EXPECTS(proc.value() == 0);
+    EXPECTS(mp.buf_ != nullptr);
+    int hi = nelements.value();
+    uint8_t *to_buf = mp.buf_ + mp.elsize_*off.value();
+    switch(mp.eltype_) {
+      case ElementType::single_precision:
+        for(int i=0; i<hi; i++) {
+          reinterpret_cast<float*>(to_buf)[i] += reinterpret_cast<const float*>(from_buf)[i];
+        }
+        break;
+      case ElementType::double_precision:
+        for(int i=0; i<hi; i++) {
+          reinterpret_cast<double*>(to_buf)[i] += reinterpret_cast<const double*>(from_buf)[i];
+        }
+        break;
+      case ElementType::single_complex:
+        for(int i=0; i<hi; i++) {
+          reinterpret_cast<std::complex<float>*>(to_buf)[i] += reinterpret_cast<const std::complex<float>*>(from_buf)[i];
+        }
+        break;
+      case ElementType::double_complex:
+        for(int i=0; i<hi; i++) {
+          reinterpret_cast<std::complex<double>*>(to_buf)[i] += reinterpret_cast<const std::complex<double>*>(from_buf)[i];
+        }
+        break;
+      default:
+        NOT_IMPLEMENTED();
+    }
+  }
+
+  /**
    * @copydoc MemoryManager::print_coll
    */
   void print_coll(const MemoryRegion& mpb, std::ostream& os) override {
@@ -207,14 +273,18 @@ public:
     for(size_t i=0; i<mp.local_nelements().value(); i++) {
       switch(mp.eltype_) {
         case ElementType::double_precision:
-          os<<i<<"     "<<(reinterpret_cast<const double*>(mp.buf_))[i]<<"\n";
+          os<<i<<"     "<<(reinterpret_cast<const double*>(mp.buf_))[i]<<std::endl;
           break;
         default:
           NOT_IMPLEMENTED();
       }
     }
-    os<<"\n\n";
+    os<<std::endl<<std::endl;
   }
+
+private:
+
+ friend class ExecutionContext;
 }; // class MemoryManagerLocal
 
 }  // namespace tamm

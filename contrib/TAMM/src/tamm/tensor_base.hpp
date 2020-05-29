@@ -256,6 +256,16 @@ public:
 
     Spin spin_total() const { return spin_total_; }
 
+    bool is_dense() const { 
+        bool result = true;
+        for(const auto& tis : block_indices_) {
+            if(tis.is_dependent()) {
+                return false;
+            }
+        }
+        return result;
+    }
+
     bool is_non_zero(const IndexVector& blockid) const {
         if(!has_spin()) { return true; }
 
@@ -330,8 +340,8 @@ protected:
 
     std::vector<TiledIndexSpace> block_indices_;
     Spin spin_total_;
-    bool has_spatial_symmetry_;
-    bool has_spin_symmetry_;
+    bool has_spatial_symmetry_ = false;
+    bool has_spin_symmetry_ = false;
     AllocationStatus allocation_status_;
 
     TensorRank num_modes_;

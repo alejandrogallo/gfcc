@@ -210,11 +210,8 @@ TEST_CASE("SCF Commutator declarations") {
         using space_type  = tamm::TiledIndexSpace;
         using index_type  = tamm::TiledIndexLabel;
 
-        ProcGroup pg{GA_MPI_Comm()};
-        auto mgr = MemoryManagerGA::create_coll(pg);
-        Distribution_NW distribution;
-        RuntimeEngine re;
-        ExecutionContext* ec = new ExecutionContext{pg, &distribution, mgr, &re};
+        ProcGroup pg = ProcGroup::create_coll(GA_MPI_Comm());
+        ExecutionContext* ec = new ExecutionContext{pg, DistributionKind::nw, MemoryManagerKind::ga};
 
         IndexSpace is{range(10)};
         space_type tis{is};
@@ -241,7 +238,6 @@ TEST_CASE("SCF Commutator declarations") {
             .execute();
 
         tensor_type::deallocate(comm, temp, F, D, S);
-        MemoryManagerGA::destroy_coll(mgr);
 
         delete ec;
     } catch(...) { failed = true; }
@@ -271,11 +267,8 @@ TEST_CASE("SCF JK declarations") {
     try {
         using tensor_type = tamm::Tensor<double>;
 
-        ProcGroup pg{GA_MPI_Comm()};
-        auto mgr = MemoryManagerGA::create_coll(pg);
-        Distribution_NW distribution;
-        RuntimeEngine re;
-        ExecutionContext ec{pg, &distribution, mgr, &re};
+        ProcGroup pg = ProcGroup::create_coll(GA_MPI_Comm());
+        ExecutionContext ec{pg, DistributionKind::nw, MemoryManagerKind::ga};
 
         IndexSpace is{range(10)};
         tamm::TiledIndexSpace tis{is};
@@ -329,11 +322,8 @@ TEST_CASE("CCSD T2") {
     try {
         using T = double;
 
-        ProcGroup pg{GA_MPI_Comm()};
-        auto mgr = MemoryManagerGA::create_coll(pg);
-        Distribution_NW distribution;
-        RuntimeEngine re;
-        ExecutionContext* ec = new ExecutionContext{pg, &distribution, mgr, &re};
+        ProcGroup pg = ProcGroup::create_coll(GA_MPI_Comm());
+        ExecutionContext* ec = new ExecutionContext{pg, DistributionKind::nw, MemoryManagerKind::ga};
 
         IndexSpace MO_IS{range(0, 14),
                          {{"occ", {range(0, 10)}}, {"virt", {range(10, 14)}}}};
@@ -465,12 +455,8 @@ TEST_CASE("Tensor operations on named subspaces") {
 
     std::cerr << "Allocate and deallocate tensors" << std::endl;
 
-    ProcGroup pg{GA_MPI_Comm()};
-    MemoryManagerGA* mgr = MemoryManagerGA::create_coll(pg);
-    Distribution_NW distribution;
-    RuntimeEngine re;
-    ExecutionContext* ec = new ExecutionContext{pg, &distribution, mgr, &re};
-
+    ProcGroup pg = ProcGroup::create_coll(GA_MPI_Comm());
+    ExecutionContext* ec = new ExecutionContext{pg, DistributionKind::nw, MemoryManagerKind::ga};
     {
         bool failed = false;
         try {

@@ -4,7 +4,7 @@ C   0.00000000     0.00000000    0.00000000
 O   0.00000000     0.00000000    1.128
 
 COMMON {  
-    basis cc-pvdz
+    basis cc-pvdz 
     maxiter 50
     geometry units angstrom
     //debug true
@@ -23,12 +23,11 @@ SCF
     tilesize 30
     //debug true
     //restart true
+    //noscf true
 }
 
 CD {
     diagtol 1e-8
-    max_cvecs 8 //factor*nao
-    //debug false
 }
 
 CCSD {
@@ -37,18 +36,23 @@ CCSD {
     //readt true
     writet true
     //gf_restart false
-    gf_ndiis 10
+    gf_ip true
+    gf_ngmres 10
     gf_maxiter 100
+    //gf_nprocs_poi 2
     gf_damping_factor 1
-    gf_p_oi_range 1 
-    gf_eta -0.01 
-    gf_threshold 1e-2  
-    gf_omega_min -0.8
-    gf_omega_max -0.4
-    gf_omega_min_e -2.0
-    gf_omega_max_e 0  
+    gf_p_oi_range 1
+    gf_eta 0.01
+    gf_threshold 1e-2
+    gf_omega_min_ip -0.4
+    gf_omega_max_ip -0.2
+    gf_omega_min_ip_e -2.0
+    gf_omega_max_ip_e 0
     gf_omega_delta 0.01
     gf_omega_delta_e 0.01
     //gf_extrapolate_level 3
+    //gf_analyze_level 4
+    //gf_analyze_num_omega 8
+    //gf_analyze_omega 0.5 0.51 0.61 0.62
 
 }

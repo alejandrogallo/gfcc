@@ -80,28 +80,35 @@ SCF
 }
 
 CD {
-    diagtol 1e-6
-    max_cvecs 12 //factor*nao
+    diagtol 1e-8
     //debug false
 }
 
 CCSD {
     threshold 1e-6
-    debug true
+    //debug true
     //readt true
-    tilesize 80
-    itilesize 1000
     writet true
-    gf_ndiis 19
+    //gf_restart false
+    gf_ip true
+    gf_os false
+    gf_cs false
+    gf_ngmres 10
+    gf_maxiter 100
+    //gf_nprocs_poi 2
+    gf_damping_factor 1
     gf_p_oi_range 1
-    gf_eta -0.01
-    gf_threshold 1e-1
-    gf_omega_min -10.5
-    gf_omega_max -10.4
-    gf_omega_min_e -13
-    gf_omega_max_e -10
+    gf_eta 0.01
+    gf_threshold 1e-2
+    gf_omega_min_ip -0.4
+    gf_omega_max_ip -0.2
+    gf_omega_min_ip_e -2.0
+    gf_omega_max_ip_e 0
     gf_omega_delta 0.01
-    gf_extrapolate_level 2
+    gf_omega_delta_e 0.01
+    //gf_extrapolate_level 3
+    //gf_analyze_level 4
+    //gf_analyze_num_omega 8
+    //gf_analyze_omega 0.5 0.51 0.61 0.62
+
 }
-
-

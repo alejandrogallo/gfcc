@@ -22,6 +22,12 @@
 // #include "tamm/spin_tensor.hpp"
 #include "tamm/dag_impl.hpp"
 #include "tamm/tamm_utils.hpp"
+#include "tamm/lru_cache.hpp"
 #undef I
 
-#endif // TAMM_TAMM_H_
+namespace tamm {
+void initialize(int argc, char *argv[]);
+void finalize();
+}
+
+#endif // TAMM_TAMM_HPP_

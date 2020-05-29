@@ -3,6 +3,7 @@
 
 #include <iosfwd>
 
+#include <chrono>
 #include "tamm/types.hpp"
 #include "tamm/proc_group.hpp"
 
@@ -16,6 +17,31 @@
 
 
 namespace tamm {
+
+extern double memTime1;
+extern double memTime2;
+extern double memTime3;
+extern double memTime4;
+extern double memTime5;
+extern double memTime6;
+extern double memTime7;
+extern double memTime8;
+extern double memTime9; 
+
+class TimerGuard {
+public:
+    TimerGuard(double *refptr)
+    : refptr_{refptr} {
+        start_time_ = std::chrono::high_resolution_clock::now();
+    }
+    ~TimerGuard() {
+        std::chrono::time_point<std::chrono::high_resolution_clock> end_time = std::chrono::high_resolution_clock::now();
+        *refptr_ += std::chrono::duration_cast<std::chrono::duration<double>>((end_time - start_time_)).count();
+    }
+private:
+    double *refptr_;
+    std::chrono::time_point<std::chrono::high_resolution_clock> start_time_;
+};  // TimeGuard
 
 enum class MemoryManagerType { local, distributed };
 
@@ -51,6 +77,19 @@ class MemoryManager {
   virtual MemoryRegion* alloc_coll(ElementType eltype, Size nelements) = 0;
 
   /**
+   * @brief Collective allocation of a memory region.
+   *
+   * Collective on the process group.
+   * @param eltype Element type (should be the same on all ranks making this
+   * call)
+   * @param max_nelements All ranks pass the same number of elements to
+   * allocated per rank
+   * @return Allocated memory region
+   */
+  virtual MemoryRegion* alloc_coll_balanced(ElementType eltype,
+                                            Size max_nelements) = 0;
+
+  /**
    * @brief Attach a memory region to the process group.
    *
    * This is collective on the memory region's process group.
@@ -66,12 +105,22 @@ class MemoryManager {
   ProcGroup pg() const {
     return pg_;
   }
+  
+  virtual ~MemoryManager() {}
+
+/**
+     * @brief Return the memory manager type type
+     * 
+     * @return MemoryManagerType 
+     */
+  MemoryManagerKind kind() const {
+      return kind_;
+    }
 
  protected:
-  explicit MemoryManager(ProcGroup pg)
-      : pg_{pg} {}
+  explicit MemoryManager(ProcGroup pg, MemoryManagerKind kind)
+      : pg_{pg}, kind_{kind} {}
 
-  virtual ~MemoryManager() {}
 
  public:
   /**
@@ -128,6 +177,23 @@ class MemoryManager {
   virtual void get(MemoryRegion& mr, Proc proc, Offset off, Size nelements, void* buf) = 0;
 
   /**
+   * Get data from a buffer associated with a memory region into a local memory buffer in nonblocking fashion
+   * @param mr Memory region
+   * @param proc Rank whose buffer is to be accessed
+   * @param off Offset at which data is to be accessed
+   * @param nelements Number of elements to get
+   * @param buf Local buffer into which
+   *
+   * @post
+   * @code
+   * buf[0..nelements] = mr[proc].buf[off..off+nelements]
+   * @endcode
+   * @pre buf != nullptr
+   * @pre buf[0..nelements] is valid (i.e., buffer is of sufficient size)
+   */
+  virtual void nb_get(MemoryRegion& mr, Proc proc, Offset off, Size nelements, void* buf, DataCommunicationHandlePtr data_comm_handle) = 0;
+
+  /**
    * Put data to a buffer associated with a memory region from a local memory buffer
    * @param mr Memory region
    * @param proc Rank whose buffer is to be accessed
@@ -143,6 +209,23 @@ class MemoryManager {
    * @pre buf[0..nelements] is valid (i.e., buffer is of sufficient size)
    */
   virtual void put(MemoryRegion& mr, Proc proc, Offset off, Size nelements, const void* buf) = 0;
+
+  /**
+   * Put data to a buffer associated with a memory region from a local memory buffer in nonblocking fashion
+   * @param mr Memory region
+   * @param proc Rank whose buffer is to be accessed
+   * @param off Offset at which data is to be accessed
+   * @param nelements Number of elements to get
+   * @param buf Local buffer into which
+   *
+   * @post
+   * @code
+   * mr[proc].buf[off..off+nelements] = buf[0..nelements]
+   * @endcode
+   * @pre buf != nullptr
+   * @pre buf[0..nelements] is valid (i.e., buffer is of sufficient size)
+   */
+  virtual void nb_put(MemoryRegion& mr, Proc proc, Offset off, Size nelements, const void* buf, DataCommunicationHandlePtr data_comm_handle) = 0;
 
   /**
    * Add data to a buffer associated with a memory region from a local memory buffer
@@ -161,6 +244,23 @@ class MemoryManager {
    */
   virtual void add(MemoryRegion& mr, Proc proc, Offset off, Size nelements, const void* buf) = 0;
 
+ /**
+   * Add data to a buffer associated with a memory region from a local memory buffer in nonblocking fashion
+   * @param mr Memory region
+   * @param proc Rank whose buffer is to be accessed
+   * @param off Offset at which data is to be accessed
+   * @param nelements Number of elements to get
+   * @param buf Local buffer into which
+   *
+   * @post
+   * @code
+   * mr[proc].buf[off..off+nelements] += buf[0..nelements]
+   * @endcode
+   * @pre buf != nullptr
+   * @pre buf[0..nelements] is valid (i.e., buffer is of sufficient size)
+   */
+  virtual void nb_add(MemoryRegion& mr, Proc proc, Offset off, Size nelements, const void* buf, DataCommunicationHandlePtr data_comm_handle) = 0;
+
   /**
    * @brief Collectively print contents of the memory region
    *
@@ -170,10 +270,17 @@ class MemoryManager {
    */
   virtual void print_coll(const MemoryRegion& mr, std::ostream& os) = 0;
 
+  ProcGroup get_proc_group() {
+    return pg_;
+  }
+
  protected:
   ProcGroup pg_;
 
+  MemoryManagerKind kind_; /**< MemoryManager kind */
+
   friend class MemoryRegion;
+  friend class ExecutionContext;
 }; // class MemoryManager
 
 /**

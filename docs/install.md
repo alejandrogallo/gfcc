@@ -74,7 +74,7 @@ make -j2
 Step 4: Running the GFCC code
 ------------------------------
 `cd $GFCC_SRC/build`   
-`mpirun -n 4 ./test_stage/$GFCC_INSTALL_PATH/tests/GF_CCSD_CS ../tests/co.nwx`
+`mpirun -n 4 ./test_stage/$GFCC_INSTALL_PATH/tests/GF_CCSD ../tests/co.nwx`
 
 
 -------------------------------------------------------------------
@@ -118,6 +118,7 @@ module load cmake/3.14.2
 module load spectrum-mpi/10.3.0.1-20190611
 module load essl/6.1.0-2
 module load cuda/10.1.105
+module load netlib-lapack/3.8.0
 ```
 
 ```
@@ -125,7 +126,8 @@ The following paths may need to be adjusted if the modules change:
 
 export GFCC_INSTALL_PATH=$HOME/gfcc_install
 export ESSL_INC=/sw/summit/essl/6.1.0-2/essl/6.1/include
-export TAMM_BLASLIBS="/sw/summit/essl/6.1.0-2/essl/6.1/lib64/libesslsmp6464.so"
+export TAMM_BLASLIBS="/sw/summit/essl/6.1.0-2/essl/6.1/lib64/libesslsmp.so"
+export NETLIB_BLAS_LIBS="/autofs/nccs-svm1_sw/summit/.swci/1-compute/opt/spack/20180914/linux-rhel7-ppc64le/gcc-8.1.1/netlib-lapack-3.8.0-moo2tlhxtaae4ij2vkhrkzcgu2pb3bmy/lib64"
 ```
 ```
 CC=gcc CXX=g++ FC=gfortran cmake \
@@ -136,6 +138,7 @@ CC=gcc CXX=g++ FC=gfortran cmake \
 -DLAPACKE_LIBRARIES=$TAMM_BLASLIBS \
 -DTAMM_CXX_FLAGS="-mcpu=power9" \
 -DBLIS_CONFIG=power9 ..
+-DTAMM_EXTRA_LIBS="$NETLIB_BLAS_LIBS/liblapack.a" 
 
 To enable CUDA build, add -DNWX_CUDA=ON
 

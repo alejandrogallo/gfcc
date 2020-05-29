@@ -100,14 +100,13 @@ SCF
 
     tol_int 1e-8
     tol_lindep 1e-10
-    conve 1e-8
-    convd 1e-4
-    diis_hist 17
+    conve 1e-6
+    convd 1e-5
+    diis_hist 10
     tilesize 30
     //debug true
     //restart true
 }
-
 
 CD {
     diagtol 1e-6
@@ -119,18 +118,21 @@ CCSD {
     threshold 1e-6
     //debug true
     //readt true
-    tilesize 120
-    itilesize 3000
-    writet true
-    gf_ndiis 17
-    gf_p_oi_range 1 
-    gf_eta -0.01 
-    gf_threshold 2e-2  
-    gf_omega_min -0.3
-    gf_omega_max -0.2  
-    gf_omega_min_e -2.0
-    gf_omega_max_e 0  
+    //writet true
+    gf_ip true
+    gf_ngmres 10
+    gf_maxiter 100
+    //gf_nprocs_poi 2
+    gf_itriples false
+    gf_damping_factor 1
+    gf_p_oi_range 1
+    gf_eta 0.01
+    gf_threshold 1e-2
+    gf_omega_min_ip -0.4
+    gf_omega_max_ip -0.2
+    gf_omega_min_ip_e -2.0
+    gf_omega_max_ip_e 0
     gf_omega_delta 0.01
-    gf_extrapolate_level 2
-}
+    gf_omega_delta_e 0.01
 
+}

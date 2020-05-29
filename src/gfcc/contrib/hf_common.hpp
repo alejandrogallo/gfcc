@@ -1,6 +1,6 @@
 
-#ifndef TAMM_TESTS_HF_COMMON_HPP_
-#define TAMM_TESTS_HF_COMMON_HPP_
+#ifndef TAMM_METHODS_HF_COMMON_HPP_
+#define TAMM_METHODS_HF_COMMON_HPP_
 
 #include <cctype>
 
@@ -11,7 +11,7 @@
 #include <unsupported/Eigen/MatrixFunctions>
 #undef I
 
-#include "input_parser.hpp"
+#include "molden.hpp"
 
 #ifdef _OPENMP
 #include <omp.h>
@@ -23,7 +23,7 @@
 
 // #define EIGEN_DIAG 
 // #ifndef SCALAPACK
-#include "linalg.hpp"
+  #include "linalg.hpp"
 #ifdef SCALAPACK
   // CXXBLACS BLACS/ScaLAPACK wrapper
   // #include LAPACKE_HEADER
@@ -36,6 +36,11 @@
 #endif
 #undef I 
 
+#include "utils/external/nlohmann/json.hpp"
+using json = nlohmann::json;
+
+#include <filesystem>
+
 using namespace tamm;
 using std::cerr;
 using std::cout;
@@ -45,7 +50,6 @@ using libint2::Atom;
 
 using TensorType = double;
 const auto max_engine_precision = std::numeric_limits<double>::epsilon() / 1e10;
-
 
 using Matrix   = Eigen::Matrix<TensorType, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>;
 using Tensor1D = Eigen::Tensor<TensorType, 1, Eigen::RowMajor>;
@@ -57,15 +61,18 @@ using shellpair_list_t = std::unordered_map<size_t, std::vector<size_t>>;
 shellpair_list_t obs_shellpair_list;  // shellpair list for OBS
 shellpair_list_t dfbs_shellpair_list;  // shellpair list for DFBS
 shellpair_list_t minbs_shellpair_list;  // shellpair list for minBS
+shellpair_list_t obs_shellpair_list_atom;  // shellpair list for OBS for specfied atom
+shellpair_list_t minbs_shellpair_list_atom;  // shellpair list for minBS for specfied atom
 using shellpair_data_t = std::vector<std::vector<std::shared_ptr<libint2::ShellPair>>>;  // in same order as shellpair_list_t
 shellpair_data_t obs_shellpair_data;  // shellpair data for OBS
 shellpair_data_t dfbs_shellpair_data;  // shellpair data for DFBS
 shellpair_data_t minbs_shellpair_data;  // shellpair data for minBS
+shellpair_data_t obs_shellpair_data_atom;  // shellpair data for OBS for specfied atom
+shellpair_data_t minbs_shellpair_data_atom;  // shellpair data for minBS for specfied atom
 
 int idiis  = 0;
-SCFOptions scf_options;
-
-Matrix C_occ;
+int iediis  = 0;
+bool switch_diis=false;
 
 //AO
 tamm::TiledIndexSpace tAO, tAOt;
@@ -89,9 +96,209 @@ tamm::TiledIndexLabel d_mup, d_nup, d_kup;
 tamm::TiledIndexSpace tdfCocc;
 tamm::TiledIndexLabel dCocc_til;
 
-tamm::Tensor<TensorType> xyK_tamm; //n,n,ndf
-tamm::Tensor<TensorType> C_occ_tamm; //n,nocc
+struct EigenTensors {
+  Matrix H,S;
+  Matrix C,G,D,F,X;
+  Matrix C_occ;
+  Matrix C_beta,G_beta,D_beta,F_beta,X_beta;
+};
 
+struct TAMMTensors {
+    std::vector<Tensor<TensorType>> ehf_tamm_hist;
+    
+    std::vector<Tensor<TensorType>> diis_hist;
+    std::vector<Tensor<TensorType>> fock_hist;
+    std::vector<Tensor<TensorType>> D_hist;
+
+    std::vector<Tensor<TensorType>> diis_beta_hist;
+    std::vector<Tensor<TensorType>> fock_beta_hist;
+    std::vector<Tensor<TensorType>> D_beta_hist;
+    
+    Tensor<TensorType> ehf_tamm;
+    Tensor<TensorType> ehf_tmp;
+    Tensor<TensorType> ehf_beta_tmp;
+    
+    Tensor<TensorType> H1;
+    Tensor<TensorType> S1;
+    Tensor<TensorType> T1;
+    Tensor<TensorType> V1;
+    Tensor<TensorType> F1;
+    Tensor<TensorType> F1_beta;
+    Tensor<TensorType> F1tmp1;
+    Tensor<TensorType> F1tmp1_beta;
+    Tensor<TensorType> F1tmp; //not allocated {tAOt, tAOt}
+
+    Tensor<TensorType> D_tamm;
+    Tensor<TensorType> D_beta_tamm;
+    Tensor<TensorType> D_diff;
+    Tensor<TensorType> D_last_tamm;
+    Tensor<TensorType> D_last_beta_tamm;
+    
+    Tensor<TensorType> FD_tamm;
+    Tensor<TensorType> FDS_tamm;
+    Tensor<TensorType> FD_beta_tamm;
+    Tensor<TensorType> FDS_beta_tamm;    
+
+    //DF
+    Tensor<TensorType> xyK_tamm; //n,n,ndf
+    Tensor<TensorType> C_occ_tamm; //n,nocc     
+};
+
+struct SystemData {
+  OptionsMap options_map;  
+  int  n_occ_alpha;
+  int  n_vir_alpha;
+  int  n_occ_beta;
+  int  n_vir_beta;
+  int  n_lindep;
+  int  nbf;
+  int  nbf_orig;
+  int  nelectrons;
+  int  nelectrons_alpha;
+  int  nelectrons_beta;  
+  int  n_frozen_core;
+  int  n_frozen_virtual;
+  int  nmo;
+  int  nocc;
+  int  nvir;
+  int  focc;
+  bool ediis;
+
+  enum SCFType { uhf, rhf, rohf };
+  SCFType scf_type; //1-rhf, 2-uhf, 3-rohf
+  std::string scf_type_string; 
+  std::string input_molecule;
+  std::string output_file_prefix;
+
+  //output data
+  double scf_energy;
+  int scf_iterations;
+  int num_chol_vectors;
+  int ccsd_iterations;
+  double ccsd_corr_energy;
+  double ccsd_total_energy;
+
+  void print() {
+    std::cout << std::endl << "----------------------------" << std::endl;
+    std::cout << "scf_type = " << scf_type_string << std::endl;
+
+    std::cout << "nbf = " << nbf << std::endl;
+    std::cout << "nbf_orig = " << nbf_orig << std::endl;
+    std::cout << "n_lindep = " << n_lindep << std::endl;
+    
+    std::cout << "focc = " << focc << std::endl;        
+    std::cout << "nmo = " << nmo << std::endl;
+    std::cout << "nocc = " << nocc << std::endl;
+    std::cout << "nvir = " << nvir << std::endl;
+    
+    std::cout << "n_occ_alpha = " << n_occ_alpha << std::endl;
+    std::cout << "n_vir_alpha = " << n_vir_alpha << std::endl;
+    std::cout << "n_occ_beta = " << n_occ_beta << std::endl;
+    std::cout << "n_vir_beta = " << n_vir_beta << std::endl;
+    
+    std::cout << "nelectrons = " << nelectrons << std::endl;
+    std::cout << "nelectrons_alpha = " << nelectrons_alpha << std::endl;
+    std::cout << "nelectrons_beta = " << nelectrons_beta << std::endl;  
+    std::cout << "n_frozen_core = " << n_frozen_core << std::endl;
+    std::cout << "n_frozen_virtual = " << n_frozen_virtual << std::endl;
+    std::cout << "num_chol_vectors = " << num_chol_vectors << std::endl;
+    std::cout << "----------------------------" << std::endl;
+  }
+
+  void update() {
+      n_frozen_core = 0;
+      n_frozen_virtual = 0;
+      EXPECTS(nbf == n_occ_alpha + n_vir_alpha); //lin-deps
+      EXPECTS(nbf_orig == n_occ_alpha + n_vir_alpha + n_lindep);      
+      nocc = n_occ_alpha + n_occ_beta;
+      nvir = n_vir_alpha + n_vir_beta;
+      EXPECTS(nelectrons == n_occ_alpha + n_occ_beta);
+      EXPECTS(nelectrons == nelectrons_alpha+nelectrons_beta);
+      nmo = n_occ_alpha + n_vir_alpha + n_occ_beta + n_vir_beta; //lin-deps
+  }
+
+  SystemData(OptionsMap options_map_, const std::string scf_type_string)
+    : options_map(options_map_), scf_type_string(scf_type_string) {
+      scf_type = SCFType::rhf;
+      if(scf_type_string == "uhf")       { focc = 1; scf_type = SCFType::uhf; }
+      else if(scf_type_string == "rhf")  { focc = 2; scf_type = SCFType::rhf; }
+      else if(scf_type_string == "rohf") { focc = -1; scf_type = SCFType::rohf; }
+    }
+
+};
+
+void write_results(SystemData sys_data, const std::string module){
+  auto options = sys_data.options_map;
+  auto scf = options.scf_options;
+  auto cd = options.cd_options;
+  auto ccsd = options.ccsd_options;
+  std::string l_module = module;
+  to_lower(l_module);
+  std::string json_file = sys_data.input_molecule+"."+l_module+".json";
+  bool json_exists = std::filesystem::exists(json_file);
+
+  json results =  json::object();
+
+  if(json_exists){
+    // std::ifstream jread(json_file);
+    // jread >> results;
+    std::filesystem::remove(json_file);
+  }
+  
+  auto str_bool = [=] (const bool val) {
+    if (val) return "true";
+    return "false";
+  };
+
+  results["input"]["molecule"]["name"] = sys_data.input_molecule;
+  results["input"]["molecule"]["basis"] = scf.basis;
+  results["input"]["molecule"]["basis_sphcart"] = scf.sphcart;
+  results["input"]["molecule"]["geometry_units"] = scf.geom_units;
+  //SCF options
+  results["input"]["SCF"]["tol_int"] = scf.tol_int;
+  results["input"]["SCF"]["tol_lindep"] = scf.tol_lindep;
+  results["input"]["SCF"]["conve"] = scf.conve;
+  results["input"]["SCF"]["convd"] = scf.convd;
+  results["input"]["SCF"]["diis_hist"] = scf.diis_hist;
+  results["input"]["SCF"]["AO_tilesize"] = scf.AO_tilesize;
+  results["input"]["SCF"]["force_tilesize"] = str_bool(scf.force_tilesize);
+  results["input"]["SCF"]["scf_type"] = scf.scf_type;
+  results["input"]["SCF"]["multiplicity"] = scf.multiplicity;
+
+  //SCF output
+  results["output"]["SCF"]["energy"] = sys_data.scf_energy;
+  results["output"]["SCF"]["n_iterations"] = sys_data.scf_iterations;
+
+  if(module == "CD" || module == "CCSD"){
+    //CD options
+    results["input"]["CD"]["diagtol"] = cd.diagtol;
+    results["input"]["CD"]["max_cvecs_factor"] = cd.max_cvecs_factor;
+    //CD output
+    results["output"]["CD"]["n_cholesky_vectors"] = sys_data.num_chol_vectors;
+  }
+
+  if(module == "CCSD") {
+    //CCSD options
+    results["input"]["CCSD"]["threshold"] = ccsd.threshold;
+    results["input"]["CCSD"]["tilesize"] = ccsd.tilesize;
+    results["input"]["CCSD"]["itilesize"] = ccsd.itilesize;
+    results["input"]["CCSD"]["ncuda"] = ccsd.icuda;
+    results["input"]["CCSD"]["ndiis"] = ccsd.ndiis;
+    results["input"]["CCSD"]["readt"] = str_bool(ccsd.readt);
+    results["input"]["CCSD"]["writet"] = str_bool(ccsd.writet);
+    results["input"]["CCSD"]["ccsd_maxiter"] = ccsd.ccsd_maxiter;
+    results["input"]["CCSD"]["balance_tiles"] = str_bool(ccsd.balance_tiles);
+  
+    //CCSD output
+    results["output"]["CCSD"]["n_iterations"] =   sys_data.ccsd_iterations;
+    results["output"]["CCSD"]["energy"]["correlation"] =  sys_data.ccsd_corr_energy;
+    results["output"]["CCSD"]["energy"]["total"] =  sys_data.ccsd_total_energy;
+  }
+  
+  // std::cout << std::endl << std::endl << results.dump() << std::endl;
+  std::ofstream res_file(json_file);
+  res_file << std::setw(4) << results << std::endl;
+}
 
 //DENSITY FITTING
 struct DFFockEngine {
@@ -110,7 +317,7 @@ Matrix compute_shellblock_norm(const libint2::BasisSet& obs, const Matrix& A);
 std::tuple<shellpair_list_t,shellpair_data_t>
 compute_shellpairs(const libint2::BasisSet& bs1,
                    const libint2::BasisSet& bs2 = libint2::BasisSet(),
-                   double threshold = 1e-12);
+                   double threshold = 1e-16);
 
 template <libint2::Operator Kernel = libint2::Operator::coulomb>
 Matrix compute_schwarz_ints(
@@ -125,8 +332,7 @@ Matrix compute_schwarz_ints(
 // the condition number of its metric (Xinv.transpose . Xinv) <
 // S_condition_number_threshold
 std::tuple<Matrix, Matrix, double> conditioning_orthogonalizer(
-   const ExecutionContext& ec,
-    const Matrix& S, double S_condition_number_threshold);
+   const ExecutionContext& ec, SystemData& sys_data, const Matrix& S);
 
 template <class T> T &unconst_cast(const T &v) { return const_cast<T &>(v); }
 
@@ -179,25 +385,36 @@ std::vector<size_t> map_basis_function_to_shell(
     return result;
 }
 
-std::string getfilename(std::string filename){
-  size_t lastindex = filename.find_last_of(".");
-  auto fname = filename.substr(0,lastindex);
-  return fname.substr(fname.find_last_of("/")+1,fname.length());
-}
-
-void writeC(Matrix& C, std::string filename, std::string scf_files_prefix){
+void writeC(Matrix& C, std::string scf_files_prefix){
   std::string outputfile = scf_files_prefix + ".movecs";
   const auto N = C.rows();
-  std::vector<TensorType> Cbuf(N*N);
-  TensorType *Hbuf = Cbuf.data();
-  Eigen::Map<Matrix>(Hbuf,N,N) = C;  
+  const auto Northo = C.cols();
+  std::vector<TensorType> Cbuf(N*Northo);
+  TensorType *buf = Cbuf.data();
+  Eigen::Map<Matrix>(buf,N,Northo) = C;  
   std::ofstream out(outputfile, std::ios::out | std::ios::binary);
   if(!out) {
     cerr << "ERROR: Cannot open file " << outputfile << endl;
     return;
   }
 
-  out.write((char *)(Hbuf), sizeof(TensorType) *N*N);
+  out.write((char *)(buf), sizeof(TensorType) *N*Northo);
+  out.close();
+}
+
+void writeD(Matrix& D, std::string scf_files_prefix){
+  std::string outputfile = scf_files_prefix + ".density";
+  const auto N = D.rows();
+  std::vector<TensorType> Dbuf(N*N);
+  TensorType *buf = Dbuf.data();
+  Eigen::Map<Matrix>(buf,N,N) = D;  
+  std::ofstream out(outputfile, std::ios::out | std::ios::binary);
+  if(!out) {
+    cerr << "ERROR: Cannot open file " << outputfile << endl;
+    return;
+  }
+
+  out.write((char *)(buf), sizeof(TensorType) *N*N);
   out.close();
 }
 
@@ -210,9 +427,34 @@ std::vector<size_t> sort_indexes(std::vector<T>& v){
     return idx;
 }
 
-template<typename ...Args>
-auto print_2e(Args&&... args){
-((std::cout << args << ", "), ...);
+template<typename T, int ndim>
+void t2e_hf_helper(const ExecutionContext& ec, tamm::Tensor<T>& ttensor,Matrix& etensor,
+                   const std::string& ustr = "") {
+
+    const string pstr = "(" + ustr + ")";                     
+
+    // auto hf_t1 = std::chrono::high_resolution_clock::now();
+
+    const auto rank = ec.pg().rank();
+    const auto N = etensor.rows(); //TODO
+
+    if(rank == 0)
+      tamm_to_eigen_tensor(ttensor, etensor);
+    ec.pg().barrier();
+    std::vector<T> Hbufv(N*N);
+    T *Hbuf = &Hbufv[0];//Hbufv.data();
+    Eigen::Map<Matrix>(Hbuf,N,N) = etensor;  
+    // GA_Brdcst(Hbuf,N*N*sizeof(T),0);
+    MPI_Bcast(Hbuf,N*N,mpi_type<T>(),0,ec.pg().comm());
+    etensor = Eigen::Map<Matrix>(Hbuf,N,N);
+    Hbufv.clear(); Hbufv.shrink_to_fit();
+
+    // auto hf_t2 = std::chrono::high_resolution_clock::now();
+    // auto hf_time =
+    //   std::chrono::duration_cast<std::chrono::duration<double>>((hf_t2 - hf_t1)).count();
+   
+    // //ec.pg().barrier(); //TODO
+    // if(rank == 0) std::cout << std::endl << "Time for tamm to eigen " << pstr << " : " << hf_time << " secs" << endl;
 }
 
 // returns {X,X^{-1},rank,A_condition_number,result_A_condition_number}, where
@@ -227,9 +469,9 @@ auto print_2e(Args&&... args){
 // cols are transformed basis ("orthogonal" AO)
 //
 // A is conditioned to max_condition_number
-std::tuple<Matrix, Matrix, size_t, double, double> gensqrtinv(
+std::tuple<Matrix, Matrix, size_t, double, double, int64_t> gensqrtinv(
     const ExecutionContext& ec, const Matrix& S, bool symmetric = false,
-    double max_condition_number = 1e8) {
+    double threshold=1e-5) {
 #ifdef SCALAPACK
   Eigen::SelfAdjointEigenSolver<Matrix> eig_solver(S);
   auto U = eig_solver.eigenvectors();
@@ -238,7 +480,7 @@ std::tuple<Matrix, Matrix, size_t, double, double> gensqrtinv(
   auto condition_number = std::min(
       s_max / std::max(s.minCoeff(), std::numeric_limits<double>::min()),
       1.0 / std::numeric_limits<double>::epsilon());
-  auto threshold = s_max / max_condition_number;
+  // auto threshold = s_max / max_condition_number;
   long n = s.rows();
   long n_cond = 0;
   for (long i = n - 1; i >= 0; --i) {
@@ -265,15 +507,15 @@ std::tuple<Matrix, Matrix, size_t, double, double> gensqrtinv(
 #else
 
   auto world = ec.pg().comm();
-  int world_rank, world_size;
-  MPI_Comm_rank( world, &world_rank );
-  MPI_Comm_size( world, &world_size );
+  int world_rank = ec.pg().rank().value();
+  int world_size = ec.pg().size().value();
 
   int64_t n_cond;
   double condition_number, result_condition_number;
   Matrix X, Xinv;
 
   const int64_t N = S.rows();
+  int64_t n_illcond = 0;
 
   if( world_rank == 0 ) {
 
@@ -282,36 +524,43 @@ std::tuple<Matrix, Matrix, size_t, double, double> gensqrtinv(
   std::vector<double> s(N);
   linalg::lapack::syevd( 'V', 'L', N, V.data(), N, s.data() );
 
-  condition_number = std::min(
-    s.back() / std::max( s.front(), std::numeric_limits<double>::min() ),
-    1.       / std::numeric_limits<double>::epsilon()
-  );
+  // condition_number = std::min(
+  //   s.back() / std::max( s.front(), std::numeric_limits<double>::min() ),
+  //   1.       / std::numeric_limits<double>::epsilon()
+  // );
 
-  const auto threshold = s.back() / max_condition_number;
+  // const auto threshold = s.back() / max_condition_number;
   auto first_above_thresh = std::find_if( s.begin(), s.end(), [&](const auto& x){ return x >= threshold; } );
   result_condition_number = s.back() / *first_above_thresh;
 
-  const int64_t n_illcond = std::distance( s.begin(), first_above_thresh );
+  n_illcond = std::distance( s.begin(), first_above_thresh );
   n_cond    = N - n_illcond;
 
-  assert( n_cond == N ); //TODO: fix
+  if(n_illcond > 0) {
+    std::cout << std::endl << "WARNING: Found " << n_illcond << " linear dependencies" << std::endl;
+    cout << "First eigen value above tol_lindep = " << *first_above_thresh << endl;
+    std::cout << "The overlap matrix has " << n_illcond << " vectors deemed linearly dependent with eigenvalues:" << std::endl;
+    
+    for( int64_t i = 0; i < n_illcond; i++ ) cout << std::defaultfloat << i+1 << ": " << s[i] << endl;
+  }
 
   auto* V_cond = V.data() + n_illcond * N;
   X.resize( N, n_cond ); Xinv.resize( N, n_cond );
+  // X.setZero(N,N); Xinv.setZero( N, N );
 
   // Form canonical X/Xinv
   for( auto i = 0; i < n_cond; ++i ) {
 
-    const auto srt = std::sqrt( *(first_above_thresh + i) );
+    const double srt = std::sqrt( *(first_above_thresh + i) );
 
-    // X is row major....
+    // X is row major...
     auto* X_col    = X.data()    + i;
     auto* Xinv_col = Xinv.data() + i;
 
-    linalg::blas::copy( N, V_cond + i*N, 1, X_col,    N );
-    linalg::blas::copy( N, V_cond + i*N, 1, Xinv_col, N );
-    linalg::blas::scal( N, 1./srt, X_col,    N );
-    linalg::blas::scal( N, srt,    Xinv_col, N );
+    linalg::blas::copy( N, V_cond + i*N, 1, X_col,    n_cond );
+    linalg::blas::copy( N, V_cond + i*N, 1, Xinv_col, n_cond );
+    linalg::blas::scal( N, 1./srt, X_col,    n_cond );
+    linalg::blas::scal( N, srt,    Xinv_col, n_cond );
 
   }  
 
@@ -334,11 +583,13 @@ std::tuple<Matrix, Matrix, size_t, double, double> gensqrtinv(
 
     // TODO: Should buffer this
     MPI_Bcast( &n_cond,                  1, MPI_INT64_T, 0, world );
+    MPI_Bcast( &n_illcond,               1, MPI_INT64_T, 0, world );    
     MPI_Bcast( &condition_number,        1, MPI_DOUBLE,  0, world );
     MPI_Bcast( &result_condition_number, 1, MPI_DOUBLE,  0, world );
 
     if( world_rank != 0 ) {
       X.resize( N, n_cond ); Xinv.resize(N, n_cond);
+      // X.setZero(N,N); Xinv.setZero(N,N);
     }
 
     MPI_Bcast( X.data(),    X.size(),    MPI_DOUBLE, 0, world );
@@ -347,35 +598,39 @@ std::tuple<Matrix, Matrix, size_t, double, double> gensqrtinv(
 
 #endif
   return std::make_tuple(X, Xinv, size_t(n_cond), condition_number,
-                         result_condition_number);
+                         result_condition_number, n_illcond);
 }
 
 std::tuple<Matrix, Matrix, double> conditioning_orthogonalizer(
-  const ExecutionContext& ec,  const Matrix& S, double S_condition_number_threshold) {
+  const ExecutionContext& ec, SystemData& sys_data, const Matrix& S) {
   size_t obs_rank;
   double S_condition_number;
   double XtX_condition_number;
   Matrix X, Xinv;
+  int64_t n_illcond;
+  double S_condition_number_threshold = sys_data.options_map.scf_options.tol_lindep;
 
   assert(S.rows() == S.cols());
 
-  std::tie(X, Xinv, obs_rank, S_condition_number, XtX_condition_number) =
+  std::tie(X, Xinv, obs_rank, S_condition_number, XtX_condition_number, n_illcond) =
       gensqrtinv(ec, S, false, S_condition_number_threshold);
   auto obs_nbf_omitted = (long)S.rows() - (long)obs_rank;
-//   std::cout << "overlap condition number = " << S_condition_number;
-  if (obs_nbf_omitted > 0){
-    if(GA_Nodeid()==0) std::cout << " (dropped " << obs_nbf_omitted << " "
-              << (obs_nbf_omitted > 1 ? "fns" : "fn") << " to reduce to "
-              << XtX_condition_number << ")";
-  }
-  if(GA_Nodeid()==0) std::cout << endl;
+  // std::cout << "overlap condition number = " << S_condition_number;
+  // if (obs_nbf_omitted > 0){
+  //   if(GA_Nodeid()==0) std::cout << " (dropped " << obs_nbf_omitted << " "
+  //             << (obs_nbf_omitted > 1 ? "fns" : "fn") << " to reduce to "
+  //             << XtX_condition_number << ")";
+  // }
+  // if(GA_Nodeid()==0) std::cout << endl;
 
   if (obs_nbf_omitted > 0) {
     Matrix should_be_I = X.transpose() * S * X;
     Matrix I = Matrix::Identity(should_be_I.rows(), should_be_I.cols());
-    if(GA_Nodeid()==0) std::cout << "||X^t * S * X - I||_2 = " << (should_be_I - I).norm()
+    if(ec.pg().rank()==0) std::cout << std::endl << "||X^t * S * X - I||_2 = " << (should_be_I - I).norm()
               << " (should be 0)" << endl;
   }
+
+  sys_data.n_lindep = n_illcond;
 
   return std::make_tuple(X, Xinv, XtX_condition_number);
 }
@@ -402,12 +657,12 @@ compute_shellpairs(const libint2::BasisSet& bs1,
                        std::max(bs1.max_l(), bs2.max_l()), 0);
 
 
-  if(GA_Nodeid()==0)
-    std::cout << "computing non-negligible shell-pair list ... ";
+  // if(GA_Nodeid()==0)
+  //   std::cout << "computing non-negligible shell-pair list ... ";
     
-  libint2::Timers<1> timer;
-  timer.set_now_overhead(25);
-  timer.start(0);
+  // libint2::Timers<1> timer;
+  // timer.set_now_overhead(25);
+  // timer.start(0);
 
   shellpair_list_t splist;
 
@@ -471,38 +726,11 @@ compute_shellpairs(const libint2::BasisSet& bs1,
       // }
     }
   
-  timer.stop(0);
-  if(GA_Nodeid()==0)     
-    std::cout << "done (" << timer.read(0) << " s)" << endl;
+  // timer.stop(0);
+  // if(GA_Nodeid()==0)     
+  //   std::cout << "done (" << timer.read(0) << " s)" << endl;
 
   return std::make_tuple(splist,spdata);
-}
-
-// computes Superposition-Of-Atomic-Densities guess for the molecular density
-// matrix
-// in minimal basis; occupies subshells by smearing electrons evenly over the
-// orbitals
-Matrix compute_soad(const std::vector<Atom>& atoms) {
-  // compute number of atomic orbitals
-  size_t nao = 0;
-  for (const auto& atom : atoms) {
-    const auto Z = atom.atomic_number;
-    nao += libint2::sto3g_num_ao(Z);
-  }
-
-  // compute the minimal basis density
-  Matrix D = Matrix::Zero(nao, nao);
-  size_t ao_offset = 0;  // first AO of this atom
-  for (const auto& atom : atoms) {
-    const auto Z = atom.atomic_number;
-    const auto& occvec = libint2::sto3g_ao_occupation_vector(Z);
-    for(const auto& occ: occvec) {
-      D(ao_offset, ao_offset) = occ;
-      ++ao_offset;
-    }
-  }
-
-  return D * 0.5;  // we use densities normalized to # of electrons/2
 }
 
 template <libint2::Operator Kernel>
@@ -523,18 +751,18 @@ Matrix compute_schwarz_ints(
 
   // construct the 2-electron repulsion integrals engine
   // !!! very important: cannot screen primitives in Schwarz computation !!!
-  auto epsilon = 0.0;
+  double epsilon = 0.0;
   Engine engine = Engine(Kernel, std::max(bs1.max_nprim(), bs2.max_nprim()),
                       std::max(bs1.max_l(), bs2.max_l()), 0, epsilon, params);
 
-    if(GA_Nodeid()==0) {
-      std::cout << "computing Schwarz bound prerequisites (kernel=" 
-            << (int)Kernel << ") ... ";
-    }
+    // if(GA_Nodeid()==0) {
+    //   std::cout << "computing Schwarz bound prerequisites (kernel=" 
+    //         << (int)Kernel << ") ... ";
+    // }
 
-    libint2::Timers<1> timer;
-    timer.set_now_overhead(25);
-    timer.start(0);
+    // libint2::Timers<1> timer;
+    // timer.set_now_overhead(25);
+    // timer.start(0);
   
     const auto& buf = engine.results();
 
@@ -564,9 +792,9 @@ Matrix compute_schwarz_ints(
       }
     }
 
-  timer.stop(0);
-  if(GA_Nodeid()==0) 
-    std::cout << "done (" << timer.read(0) << " s)" << endl;
+  // timer.stop(0);
+  // if(GA_Nodeid()==0) 
+  //   std::cout << "done (" << timer.read(0) << " s)" << endl;
  
   return K;
 }
@@ -591,4 +819,4 @@ Matrix compute_shellblock_norm(const libint2::BasisSet& obs, const Matrix& A) {
   return Ash;
 }
 
-#endif // TAMM_TESTS_HF_COMMON_HPP_
+#endif // TAMM_METHODS_HF_COMMON_HPP_

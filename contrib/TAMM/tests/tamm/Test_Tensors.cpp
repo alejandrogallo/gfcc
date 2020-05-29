@@ -162,10 +162,8 @@ TEST_CASE("Spin Tensor Construction") {
         REQUIRE((tis_3("virt").spin(3) == Spin{2}));
     }
 
-    ProcGroup pg{GA_MPI_Comm()};
-    auto mgr = MemoryManagerGA::create_coll(pg);
-    Distribution_NW distribution;
-    ExecutionContext* ec = new ExecutionContext{pg, &distribution, mgr};
+    ProcGroup pg = ProcGroup::create_coll(GA_MPI_Comm());
+    ExecutionContext* ec = new ExecutionContext{pg, DistributionKind::nw, MemoryManagerKind::ga};
 
     failed = false;
     try {
@@ -435,17 +433,121 @@ TEST_CASE("Spin Tensor Construction") {
         auto [p] = MOs.labels<1>("all");
         Tensor<T> rho{AOs, AOs};
 
-        ProcGroup pg{GA_MPI_Comm()};
-        auto* pMM = tamm::MemoryManagerLocal::create_coll(pg);
-        tamm::Distribution_NW dist;
-        tamm::ExecutionContext ec(pg, &dist, pMM);
+        ProcGroup pg = ProcGroup::create_coll(GA_MPI_Comm());
+        tamm::ExecutionContext ec(pg, DistributionKind::nw, MemoryManagerKind::ga);
         tamm::Scheduler sch{ec};
-
         sch.allocate(rho)(rho() = 0)(rho(mu, nu) += C(mu, p) * C(nu, p))
           .execute();
 
         rho.deallocate();
         C.deallocate();
+    } catch(const std::string& e) {
+        std::cerr << e << std::endl;
+        failed = true;
+    }
+    REQUIRE(!failed);
+
+    //ScaLAPACK test
+    failed = false;
+    try {
+        std::cout << "------BEGIN block cyclic dist test------\n";
+        IndexSpace MO_IS{range(0, 7)};
+        TiledIndexSpace MO{MO_IS, {1, 1, 5}};
+        TiledIndexSpace NO{MO_IS, 2};
+        // IndexSpace MO_IS2{range(0, 7)};
+        // TiledIndexSpace MO2{MO_IS2, {1, 1, 3, 1, 1}};
+
+        Tensor<T> pT{MO, MO};
+        Tensor<T> pV{NO, NO};
+
+        Tensor<T> sca{{1,1}, {NO,NO}};
+
+        pT.allocate(ec);
+        pV.allocate(ec);
+        sca.allocate(ec);
+
+        auto tis_list = pT.tiled_index_spaces();
+        Tensor<T> H{tis_list};
+        H.allocate(ec);
+
+        auto h_tis = H.tiled_index_spaces();
+        GA_Print_distribution(pT.ga_handle());
+        // GA_Print(pT.ga_handle());
+
+        Scheduler{*ec}
+         (pT("mu", "nu") = 2.2)
+         (H("mu", "nu") = pT("mu", "ku") * pT("ku", "nu"))
+         (sca() = 2.2)
+          .execute();
+
+        // auto x = tamm::norm(H);
+        GA_Print(H.ga_handle());
+        auto sca1 = to_block_cyclic_tensor(H,{1,1},{2,2});
+        auto [lptr, lbufsize] = access_local_block_cyclic_buffer(sca1);
+        for (auto i=0L;i<lbufsize;i++)
+         std::cout << lptr[i] << "\n";
+        // GA_Print(sca1.ga_handle());
+        from_block_cyclic_tensor(sca1,pT);
+        // GA_Print(pT.ga_handle());
+
+        Tensor<T>::deallocate(H,pT,sca,sca1);
+
+        std::cout << "------END block cyclic dist test------\n";
+
+    } catch(const std::string& e) {
+        std::cerr << e << std::endl;
+        failed = true;
+    }
+    REQUIRE(!failed);
+    
+}
+
+TEST_CASE("Non trivial ScaLAPACK test") {
+    using T = double;
+    IndexSpace SpinIS{range(0, 20),
+                      {{"occ", {range(0, 10)}}, {"virt", {range(10, 20)}}},
+                      {{Spin{1}, {range(0, 5), range(10, 15)}},
+                       {Spin{2}, {range(5, 10), range(15, 20)}}}};
+
+    IndexSpace IS{range(0, 20)};
+
+    TiledIndexSpace SpinTIS{SpinIS, 5};
+    TiledIndexSpace TIS{IS, 5};
+
+    std::vector<SpinPosition> spin_mask_2D{SpinPosition::lower,
+                                           SpinPosition::upper};
+
+    TiledIndexLabel i, j, k, l;
+    std::tie(i, j) = SpinTIS.labels<2>("all");
+    std::tie(k, l) = TIS.labels<2>("all");
+
+    bool failed = false;
+
+
+    ProcGroup pg = ProcGroup::create_coll(GA_MPI_Comm());
+    ExecutionContext* ec = new ExecutionContext{pg, DistributionKind::nw, MemoryManagerKind::ga};
+    
+    // Non trivial ScaLAPACK test
+    try {
+        std::cout << "------BEGIN non trivial block cyclic dist test------\n";
+
+        size_t n = 512;
+        tamm::Tile ts = 20;
+        int64_t nb = 128;
+
+        size_t npr = 1, npc = 1;
+
+        IndexSpace is{ range(0, n ) };
+        TiledIndexSpace tis{ is, ts };
+
+        Tensor<T> A{ tis, tis };
+        A.allocate(ec);
+        Scheduler{*ec}(  A("i","j") = 1. ).execute();
+
+        auto A_scal = to_block_cyclic_tensor( A, {npr,npc}, {nb, nb} );
+
+        std::cout << "------END non trivial block cyclic dist test------\n";
+
     } catch(const std::string& e) {
         std::cerr << e << std::endl;
         failed = true;
@@ -493,11 +595,8 @@ TEST_CASE("Hash Based Equality and Compatibility Check") {
 
 TEST_CASE("GitHub Issues") {
 
-    tamm::ProcGroup pg{GA_MPI_Comm()};
-    auto *pMM = tamm::MemoryManagerLocal::create_coll(pg);
-    tamm::Distribution_NW dist;
-    tamm::ExecutionContext ec(pg, &dist, pMM);
-
+    tamm::ProcGroup pg = ProcGroup::create_coll(GA_MPI_Comm());
+    tamm::ExecutionContext ec(pg, DistributionKind::nw, MemoryManagerKind::ga);
     tamm::TiledIndexSpace X{tamm::IndexSpace{tamm::range(0, 4)}};
     tamm::TiledIndexSpace Y{tamm::IndexSpace{tamm::range(0, 3)}};
     auto [i,j] = X.labels<2>("all");

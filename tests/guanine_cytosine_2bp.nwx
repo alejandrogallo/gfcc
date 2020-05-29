@@ -60,8 +60,8 @@ N    0.073600  -1.814881   2.501524
 C    0.773581  -2.604424   1.660431
 
 COMMON {  
-    basis  6-31++g*
-    maxiter 50
+    basis  6-31++g* 
+    maxiter 100
     geometry units angstrom
     //debug true
 }
@@ -69,14 +69,17 @@ COMMON {
 SCF 
 {  //start of scf section
 
-    tol_int 1e-8
-    tol_lindep 1e-10
+    tol_int 1e-20
+    tol_lindep 1e-5
     conve 1e-8
-    convd 1e-4
-    diis_hist 17
+    convd 1e-6
+    diis_hist 12
     tilesize 30
     //debug true
     //restart true
+    //charge -1
+    //multiplicity 2
+    //scf_type uhf    
 }
 
 CD {
@@ -89,17 +92,21 @@ CCSD {
     threshold 1e-6
     //debug true
     //readt true
-    tilesize 80
-    itilesize 1000
-//    writet true
-    gf_ndiis 19
-    gf_p_oi_range 1 
-    gf_eta -0.01
-    gf_extrapolate_level 4
-    gf_threshold 2e-2  
-    gf_omega_min -0.3
-    gf_omega_max -0.2  
-    gf_omega_min_e -2.0
-    gf_omega_max_e 0  
+    //writet true
+    gf_ip true
+    gf_ngmres 10
+    gf_maxiter 100
+    //gf_nprocs_poi 2
+    gf_itriples false
+    gf_damping_factor 1
+    gf_p_oi_range 1
+    gf_eta 0.01
+    gf_threshold 1e-2
+    gf_omega_min_ip -0.4
+    gf_omega_max_ip -0.2
+    gf_omega_min_ip_e -2.0
+    gf_omega_max_ip_e 0
     gf_omega_delta 0.01
+    gf_omega_delta_e 0.01
+
 }

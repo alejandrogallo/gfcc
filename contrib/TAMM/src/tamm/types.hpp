@@ -8,6 +8,7 @@
 #include "tamm/strong_num.hpp"
 #include <complex>
 #include <iosfwd>
+#include "ga.h"
 
 //#include <mpi.h>
  
@@ -84,6 +85,7 @@ using IntLabel = int32_t; //a simple integer label for indices
 using IntLabelVec = std::vector<IntLabel>;
 
 using SizeVec = std::vector<Size>;
+using ProcGrid = std::vector<Proc>;
 
 enum class AllocationStatus { invalid, created, attached, deallocated, orphaned };
 
@@ -93,6 +95,19 @@ enum class ElementType {
     double_precision,
     single_complex,
     double_complex
+};
+
+enum class DistributionKind {
+  invalid,
+  nw,
+  dense,
+  simple_round_robin
+};
+
+enum class MemoryManagerKind {
+  invalid,
+  ga,
+  local
 };
 
 template<typename T>
@@ -157,9 +172,45 @@ enum class IndexPosition { upper, lower, neither };
 
 enum class SpinType { ao_spin, mo_spin };
 
-enum class ExecutionHW { CPU, GPU };
+enum class ExecutionHW { CPU, GPU, DEFAULT };
 
 using SpinMask = std::vector<SpinPosition>;
+
+using rtDataHandlePtr = ga_nbhdl_t*;
+using rtDataHandle = ga_nbhdl_t;
+
+class DataCommunicationHandle
+{
+    public:
+        DataCommunicationHandle() = default;
+        ~DataCommunicationHandle() = default;
+
+        void waitForCompletion() {
+            if(!getCompletionStatus()) {
+                NGA_NbWait(&data_handle_);
+                setCompletionStatus();
+            }
+        }
+        void setCompletionStatus() { status_=true; }
+        void resetCompletionStatus() { status_=false; }
+
+        bool getCompletionStatus() {
+            /*
+            if(status_ == false)
+                status_ = NGA_NbTest(&data_handle_);
+            */
+
+            return status_;
+        }
+        rtDataHandlePtr getDataHandlePtr() { return &data_handle_; }
+
+    private:
+        bool status_{true};
+        rtDataHandle data_handle_;
+};
+
+using DataCommunicationHandlePtr = DataCommunicationHandle*;
+
 //////////////////
 
 // namespace SpinType {
@@ -176,6 +227,59 @@ namespace internal {
 } // namespace internal
 
 inline Label make_label() { static Label lbl = 0; return lbl++; }
+
+  /**
+   * Convert a TAMM element type to a GA element type
+   * @param eltype TAMM element type
+   * @return Corresponding GA element type
+   */
+  static int to_ga_eltype(ElementType eltype) {
+    int ret;
+    switch(eltype) {
+      case ElementType::single_precision:
+        ret = C_FLOAT;
+        break;
+      case ElementType::double_precision:
+        ret = C_DBL;
+        break;
+      case ElementType::single_complex:
+        ret = C_SCPL;
+        break;
+      case ElementType::double_complex:
+        ret = C_DCPL;
+        break;
+      case ElementType::invalid:
+      default:
+        UNREACHABLE();
+    }
+    return ret;
+  }
+
+  /**
+   * Convert a GA element type to a TAMM element type
+   * @param eltype GA element type
+   * @return Corresponding TAMM element type
+   */
+  static ElementType from_ga_eltype(int eltype) {
+    ElementType ret;
+    switch(eltype) {
+      case C_FLOAT:
+        ret = ElementType::single_precision;
+        break;
+      case C_DBL:
+        ret = ElementType::double_precision;
+        break;
+      case C_SCPL:
+        ret = ElementType::single_complex;
+        break;
+      case C_DCPL:
+        ret = ElementType::double_complex;
+        break;
+      default:
+        UNREACHABLE();
+    }
+    return ret;
+  }
 
 } // namespace tamm
 

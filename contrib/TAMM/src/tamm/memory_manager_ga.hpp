@@ -76,22 +76,30 @@ class MemoryManagerGA : public MemoryManager {
    * @copydoc MemoryManager::attach_coll
    */
   MemoryRegion* alloc_coll(ElementType eltype, Size local_nelements) override {
-    MemoryRegionGA* pmr = new MemoryRegionGA(*this);
+    MemoryRegionGA* pmr;
+    {
+     TimerGuard tg_total{&memTime3};
+     pmr = new MemoryRegionGA(*this);
 
-    int ga_pg_default = GA_Pgroup_get_default();
-    GA_Pgroup_set_default(ga_pg_);
+      int ga_pg_default = GA_Pgroup_get_default();
+      GA_Pgroup_set_default(ga_pg_);
     int nranks = pg_.size().value();
     int ga_eltype = to_ga_eltype(eltype);
 
-    pmr->map_.resize(nranks+1);
+    pmr->map_.resize(nranks + 1);
     pmr->eltype_ = eltype;
     pmr->local_nelements_ = local_nelements;
     int64_t nels = local_nelements.value();
 
-    GA_Pgroup_set_default(ga_pg_);
     int64_t nelements_min, nelements_max;
-    MPI_Allreduce(&nels, &nelements_min, 1, MPI_LONG_LONG, MPI_MIN, pg_.comm());
-    MPI_Allreduce(&nels, &nelements_max, 1, MPI_LONG_LONG, MPI_MAX, pg_.comm());
+
+    GA_Pgroup_set_default(ga_pg_);
+
+          {
+       TimerGuard tg_total{&memTime5};
+       MPI_Allreduce(&nels, &nelements_min, 1, MPI_LONG_LONG, MPI_MIN, pg_.comm());
+       MPI_Allreduce(&nels, &nelements_max, 1, MPI_LONG_LONG, MPI_MAX, pg_.comm());
+          }
     std::string array_name{"array_name"+std::to_string(++ga_counter_)};
 
     if (nelements_min == nels && nelements_max == nels) {
@@ -102,10 +110,19 @@ class MemoryManagerGA : public MemoryManager {
       std::partial_sum(pmr->map_.begin(), pmr->map_.begin()+nranks, pmr->map_.begin());
     } else {
       int64_t dim, block = nranks;
+      {
+      TimerGuard tg_total{&memTime5};
       MPI_Allreduce(&nels, &dim, 1, MPI_LONG_LONG, MPI_SUM, pg_.comm());
+      }
+      {
+      TimerGuard tg_total{&memTime6};
       MPI_Allgather(&nels, 1, MPI_LONG_LONG, &pmr->map_[1], 1, MPI_LONG_LONG, pg_.comm());
+      }
       pmr->map_[0] = 0; // @note this is not set by MPI_Exscan
-      std::partial_sum(pmr->map_.begin(), pmr->map_.begin()+nranks, pmr->map_.begin());
+     {
+       TimerGuard tg_total{&memTime7};      
+       std::partial_sum(pmr->map_.begin(), pmr->map_.begin()+nranks, pmr->map_.begin());
+     }
       
       for(block = nranks; block>0 && static_cast<int64_t>(pmr->map_[block-1]) == dim; --block) {
         //no-op
@@ -115,15 +132,69 @@ class MemoryManagerGA : public MemoryManager {
       for(int i=0; i<nranks && *(map_start+1)==0; ++i, ++map_start, --block) {
         //no-op
       }
+      
+           {
+       TimerGuard tg_total{&memTime9};
       pmr->ga_ = NGA_Create_irreg64(ga_eltype, 1, &dim, const_cast<char*>(array_name.c_str()), &block, map_start);
+           }
+           memTime4+=memTime9;
+           memTime9=0;
+      
     }
+
     GA_Pgroup_set_default(ga_pg_default);
 
     int64_t lo, hi;//, ld;
-    NGA_Distribution64(pmr->ga_, pg_.rank().value(), &lo, &hi);
+     {
+       TimerGuard tg_total{&memTime8};    
+       NGA_Distribution64(pmr->ga_, pg_.rank().value(), &lo, &hi);
+     }
     EXPECTS(nels<=0 || lo == static_cast<int64_t>(pmr->map_[pg_.rank().value()]));
     EXPECTS(nels<=0 || hi == static_cast<int64_t>(pmr->map_[pg_.rank().value()]) + nels - 1);
     pmr->set_status(AllocationStatus::created);
+          }
+    return pmr;
+  }
+
+  MemoryRegion* alloc_coll_balanced(ElementType eltype,
+                                    Size max_nelements) override {
+
+    MemoryRegionGA* pmr = nullptr;
+     {
+       TimerGuard tg_total{&memTime3}; 
+    pmr = new MemoryRegionGA{*this};
+    int nranks = pg_.size().value();
+    int ga_eltype = to_ga_eltype(eltype);
+
+    pmr->map_.resize(nranks + 1);
+    pmr->eltype_ = eltype;
+    pmr->local_nelements_ = max_nelements;
+    int64_t nels = max_nelements.value();
+
+    std::string array_name{"array_name" + std::to_string(++ga_counter_)};
+
+    int64_t dim = nranks * nels, chunk = nels;
+    pmr->ga_ = NGA_Create_handle();
+    NGA_Set_data64(pmr->ga_, 1, &dim, ga_eltype);
+    GA_Set_chunk64(pmr->ga_, &chunk);
+    GA_Set_pgroup(pmr->ga_, pg().ga_pg());
+
+        {
+    TimerGuard tg_total{&memTime9};
+    NGA_Allocate(pmr->ga_);
+        }
+    memTime4+=memTime9;
+    memTime9=0;
+
+    pmr->map_[0] = 0;
+     {
+       TimerGuard tg_total{&memTime7};     
+    std::fill_n(pmr->map_.begin() + 1, nranks - 1, nels);
+    std::partial_sum(pmr->map_.begin(), pmr->map_.begin() + nranks,
+                     pmr->map_.begin());
+     }
+    pmr->set_status(AllocationStatus::created);
+     }
     return pmr;
   }
 
@@ -154,14 +225,13 @@ class MemoryManagerGA : public MemoryManager {
 
   protected:
   explicit MemoryManagerGA(ProcGroup pg)
-      : MemoryManager{pg} {
+      : MemoryManager{pg, MemoryManagerKind::ga} {
     EXPECTS(pg.is_valid());
-    ga_pg_ = create_ga_process_group_coll(pg);
+    pg_ = pg;
+    ga_pg_ = pg.ga_pg();
   }
 
-  ~MemoryManagerGA() {
-    GA_Pgroup_destroy(ga_pg_);
-  }
+  ~MemoryManagerGA() = default;
 
  public:
   /**
@@ -205,6 +275,17 @@ class MemoryManagerGA : public MemoryManager {
     NGA_Get64(mr.ga_, &lo, &hi, to_buf, &ld);
   }
 
+    /**
+   * @copydoc MemoryManager::nb_get
+   */
+  void nb_get(MemoryRegion& mrb, Proc proc, Offset off, Size nelements, void* to_buf, DataCommunicationHandlePtr data_comm_handle) override {
+    const MemoryRegionGA& mr = static_cast<const MemoryRegionGA&>(mrb);
+    TAMM_SIZE ioffset{mr.map_[proc.value()] + off.value()};
+    int64_t lo = ioffset, hi = ioffset + nelements.value()-1, ld = -1;
+    data_comm_handle->resetCompletionStatus();
+    NGA_NbGet64(mr.ga_, &lo, &hi, to_buf, &ld, data_comm_handle->getDataHandlePtr());
+  }
+
   /**
    * @copydoc MemoryManager::put
    */
@@ -214,6 +295,15 @@ class MemoryManagerGA : public MemoryManager {
     TAMM_SIZE ioffset{mr.map_[proc.value()] + off.value()};
     int64_t lo = ioffset, hi = ioffset + nelements.value()-1, ld = -1;
     NGA_Put64(mr.ga_, &lo, &hi, const_cast<void*>(from_buf), &ld);
+  }
+
+  void nb_put(MemoryRegion& mrb, Proc proc, Offset off, Size nelements, const void* from_buf, DataCommunicationHandlePtr data_comm_handle) override {
+    const MemoryRegionGA& mr = static_cast<const MemoryRegionGA&>(mrb);
+
+    TAMM_SIZE ioffset{mr.map_[proc.value()] + off.value()};
+    int64_t lo = ioffset, hi = ioffset + nelements.value()-1, ld = -1;
+    data_comm_handle->resetCompletionStatus();
+    NGA_NbPut64(mr.ga_, &lo, &hi, const_cast<void*>(from_buf), &ld, data_comm_handle->getDataHandlePtr());
   }
 
   /**
@@ -245,6 +335,35 @@ class MemoryManagerGA : public MemoryManager {
   }
 
   /**
+   * @copydoc MemoryManager::nb_add
+   */
+  void nb_add(MemoryRegion& mrb, Proc proc, Offset off, Size nelements, const void* from_buf, DataCommunicationHandlePtr data_comm_handle) override {
+    const MemoryRegionGA& mr = static_cast<const MemoryRegionGA&>(mrb);
+    TAMM_SIZE ioffset{mr.map_[proc.value()] + off.value()};
+    int64_t lo = ioffset, hi = ioffset + nelements.value()-1, ld = -1;
+    void *alpha;
+    switch(mr.eltype_) {
+      case ElementType::single_precision:
+        alpha = reinterpret_cast<void*>(&sp_alpha);
+        break;
+      case ElementType::double_precision:
+        alpha = reinterpret_cast<void*>(&dp_alpha);
+        break;
+      case ElementType::single_complex:
+        alpha = reinterpret_cast<void*>(&scp_alpha);
+        break;
+      case ElementType::double_complex:
+        alpha = reinterpret_cast<void*>(&dcp_alpha);
+        break;
+      case ElementType::invalid:
+      default:
+        UNREACHABLE();
+    }
+    data_comm_handle->resetCompletionStatus();
+    NGA_NbAcc64(mr.ga_, &lo, &hi, const_cast<void*>(from_buf), &ld, alpha, data_comm_handle->getDataHandlePtr());
+  }
+  
+  /**
    * @copydoc MemoryManager::print_coll
    */
   void print_coll(const MemoryRegion& mrb, std::ostream& os) override {
@@ -253,94 +372,17 @@ class MemoryManagerGA : public MemoryManager {
   }
 
  private:
-  /**
-   * Create a GA process group corresponding to the given proc group
-   * @param pg TAMM process group
-   * @return GA processes group on this TAMM process group
-   */
-  static int create_ga_process_group_coll(const ProcGroup& pg) {
-    MPI_Group group, group_world;
-    MPI_Comm comm = pg.comm();
-    int nranks = pg.size().value();
-    int ranks[nranks], ranks_world[nranks];
-    MPI_Comm_group(comm, &group);
+  ProcGroup pg_;       /**< Underlying ProcGroup */
+  int ga_pg_;          /**< GA pgroup underlying pg_ */
+  int ga_counter_ = 0; /**< GA counter to name GAs in create call */
 
-    MPI_Comm_group(GA_MPI_Comm(), &group_world);
-    
-    for (int i = 0; i < nranks; i++) {
-      ranks[i] = i;
-    }
-    MPI_Group_translate_ranks(group, nranks, ranks, group_world, ranks_world);
-
-    int ga_pg_default = GA_Pgroup_get_default();
-    GA_Pgroup_set_default(GA_Pgroup_get_world());
-    int ga_pg = GA_Pgroup_create(ranks_world, nranks);
-    GA_Pgroup_set_default(ga_pg_default);
-    return ga_pg;
-  }
-
-  /**
-   * Convert a TAMM element type to a GA element type
-   * @param eltype TAMM element type
-   * @return Corresponding GA element type
-   */
-  static int to_ga_eltype(ElementType eltype) {
-    int ret;
-    switch(eltype) {
-      case ElementType::single_precision:
-        ret = C_FLOAT;
-        break;
-      case ElementType::double_precision:
-        ret = C_DBL;
-        break;
-      case ElementType::single_complex:
-        ret = C_SCPL;
-        break;
-      case ElementType::double_complex:
-        ret = C_DCPL;
-        break;
-      case ElementType::invalid:
-      default:
-        UNREACHABLE();
-    }
-    return ret;
-  }
-
-  /**
-   * Convert a GA element type to a TAMM element type
-   * @param eltype GA element type
-   * @return Corresponding TAMM element type
-   */
-  static ElementType from_ga_eltype(int eltype) {
-    ElementType ret;
-    switch(eltype) {
-      case C_FLOAT:
-        ret = ElementType::single_precision;
-        break;
-      case C_DBL:
-        ret = ElementType::double_precision;
-        break;
-      case C_SCPL:
-        ret = ElementType::single_complex;
-        break;
-      case C_DCPL:
-        ret = ElementType::double_complex;
-        break;
-      default:
-        UNREACHABLE();
-    }
-    return ret;
-  }
-
-  int ga_pg_;
-  int ga_counter_=0;
-
-  //constants for NGA_Acc call
+  // constants for NGA_Acc call
   float sp_alpha = 1.0;
   double dp_alpha = 1.0;
   SingleComplex scp_alpha = {1, 0};
   DoubleComplex dcp_alpha = {1, 0};
-}; // class MemoryManagerGA
+  friend class ExecutionContext;
+};  // class MemoryManagerGA
 
 }  // namespace tamm
 
