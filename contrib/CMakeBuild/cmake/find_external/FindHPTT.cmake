@@ -33,7 +33,9 @@ find_package_handle_standard_args(HPTT DEFAULT_MSG
                                   HPTT_LIBRARY
                                   HPTT_INCLUDE_DIR)
 
-find_package(OpenMP REQUIRED)
+if(USE_OPENMP)                                  
+      find_package(OpenMP REQUIRED)
+endif()
 
 set(HPTT_LIBRARIES ${HPTT_LIBRARY} ${OpenMP_CXX_FLAGS})
 set(HPTT_INCLUDE_DIRS ${HPTT_INCLUDE_DIR})

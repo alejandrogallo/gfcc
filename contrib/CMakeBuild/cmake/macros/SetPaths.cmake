@@ -26,6 +26,9 @@ macro(set_paths)
     #Where we install the tests (different to avoid installing them)
     set(TEST_STAGE_DIR ${CMAKE_BINARY_DIR}/test_stage)
 
+    #Where we install the methods
+    set(METHODS_STAGE_DIR ${CMAKE_BINARY_DIR}/methods_stage)
+
     #Source and include our macros
     list(APPEND CMAKE_MODULE_PATH ${NWXBASE_MACROS} ${NWXBASE_FIND_SCRIPTS}
                 ${NWXBASE_BUILD_SCRIPTS})

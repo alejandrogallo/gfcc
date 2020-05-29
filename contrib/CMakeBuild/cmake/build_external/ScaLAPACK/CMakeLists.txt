@@ -14,15 +14,24 @@ find_dependency(LAPACKE LAPACKE_INCLUDE_DIRS
                         LAPACKE_LINK_FLAGS
                         _LAPACKE_FOUND)
 
-set(ScaLAPACK_VERSION 2.0.2)
-set(ScaLAPACK_URL
-        http://www.netlib.org/scalapack/scalapack-${ScaLAPACK_VERSION}.tgz)
+# set(ScaLAPACK_VERSION 2.0.2)
+# set(ScaLAPACK_URL
+#         http://www.netlib.org/scalapack/scalapack-${ScaLAPACK_VERSION}.tgz)
 
-enable_language(C Fortran)
-ExternalProject_Add(ScaLAPACK
-        URL ${ScaLAPACK_URL}
-        CMAKE_ARGS -DCMAKE_BUILD_TYPE=RELEASE
+if(CMAKE_POSITION_INDEPENDENT_CODE)
+    list(APPEND SCALAPACK_FLAGS "-fPIC")
+endif()
+
+ExternalProject_Add(ScaLAPACK_External
+                GIT_REPOSITORY https://github.com/NWChemEx-Project/scalapack.git
+                GIT_TAG nwx
+                UPDATE_DISCONNECTED 1
+                CMAKE_ARGS 
                    -DBUILD_TESTING=OFF
+                   -DTEST_SCALAPACK=OFF
+                   #-DBUILD_SHARED_LIBS=OFF
+                   -DCMAKE_C_FLAGS=${SCALAPACK_FLAGS}
+                   -DCMAKE_Fortran_FLAGS=${SCALAPACK_FLAGS}
                    -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
                    -DCMAKE_Fortran_COMPILER=${CMAKE_Fortran_COMPILER}
                    -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}

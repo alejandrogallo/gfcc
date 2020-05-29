@@ -1,5 +1,5 @@
 CMakeBuild Repository
-==============================
+======================
 
 Building C++ projects is a laborious process that is somewhat simplified with
 CMake.  Nonetheless CMake still requires quite a bit of hand tuning and has
@@ -33,19 +33,4 @@ contribute to CMakeBuild:
 - [CMakeBuild Model](dox/CMakeBuildModel.md)
 - [CMakeBuild Macros and Functions](dox/MacroDocumentation.md)
 
-Contributing
-------------
 
-Contributions are welcome and at some point I'll come up with an official 
-statement regarding what that all entails...
-
-Licensing
----------
-
-This entire repository will be licensed at some point.
-
-Acknowledgements
-----------------
-
-At the moment there's nothing to cite to use this repo, doubtful it'll be a 
-publication ever...

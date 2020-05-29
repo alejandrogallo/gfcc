@@ -9,7 +9,7 @@ if(${PROJECT_NAME} STREQUAL "TestBuildLibInt")
     set(TEST_LIBINT TRUE)
 endif()
 
-set(LIBINT_VERSION 2.6.0)
+set(LIBINT_VERSION 2.7.0-beta.4)
 set(LIBINT_URL https://github.com/evaleev/libint)
 set(LIBINT_TAR ${LIBINT_URL}/releases/download/v${LIBINT_VERSION})
 set(LIBINT_TAR ${LIBINT_TAR}/libint-${LIBINT_VERSION})

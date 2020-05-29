@@ -25,9 +25,10 @@ endforeach()
 ##########################################################
 
 #Possible choices
-set(ARMCI_NETWORK_OPTIONS BGML DCMF OPENIB GEMINI DMAPP PORTALS GM VIA
-        LAPI MPI-SPAWN MPI-PT MPI-MT MPI-PR MPI-TS MPI3 OFI
-        OFA SOCKETS) #MELLANOX
+set(ARMCI_NETWORK_OPTIONS MPI-PR OPENIB MPI-TS)
+# (BGML DCMF OPENIB GEMINI DMAPP PORTALS GM VIA
+#  LAPI MPI-SPAWN MPI-PT MPI-MT MPI-PR MPI-TS MPI3 OFI
+#  OFA SOCKETS MELLANOX)
 
 # Get index user choose
 is_valid_and_true(ARMCI_NETWORK __set)
@@ -58,7 +59,9 @@ ExternalProject_Add(GlobalArrays_External
                    -DNWX_DEBUG_CMAKE=${NWX_DEBUG_CMAKE}
                    -DARMCI_NETWORK=${ARMCI_NETWORK}
                    -DSTAGE_DIR=${STAGE_DIR}
-        BUILD_ALWAYS 1
+                   -DUSE_GA_DEV=${USE_GA_DEV}
+                   -DUSE_GA_PROFILER=${USE_GA_PROFILER}
+        #BUILD_ALWAYS 1
         INSTALL_COMMAND ""
         CMAKE_CACHE_ARGS ${CORE_CMAKE_LISTS}
                          ${CORE_CMAKE_STRINGS}

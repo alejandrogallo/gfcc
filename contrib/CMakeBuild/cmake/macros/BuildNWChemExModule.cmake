@@ -14,20 +14,29 @@ function(build_nwchemex_module SUPER_PROJECT_ROOT)
     option_w_default(CMAKE_CXX_STANDARD 17)
     set(CMAKE_CXX_STANDARD_REQUIRED ON)
     option_w_default(BLAS_INT4 ON)
+    option_w_default(ENABLE_COVERAGE OFF)
     option_w_default(CMAKE_CXX_EXTENSIONS OFF)
     option_w_default(CMAKE_BUILD_TYPE Release)
+    option_w_default(USE_OPENMP ON)
+    option_w_default(USE_DPCPP OFF)
+    option_w_default(USE_CUTENSOR OFF)
+    option_w_default(USE_GA_DEV OFF)
+    option_w_default(USE_GA_PROFILER OFF)
+    option_w_default(CUDA_MAXREGCOUNT 64)
 
     if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-        get_filename_component(__NWX_GCC_INSTALL_PREFIX "${CMAKE_Fortran_COMPILER}/../.." ABSOLUTE)
-        set(NWX_GCC_TOOLCHAIN_FLAG "--gcc-toolchain=${__NWX_GCC_INSTALL_PREFIX}")
-        message(STATUS "NWX_GCC_TOOLCHAIN_FLAG: ${NWX_GCC_TOOLCHAIN_FLAG}")
+        if(NOT "${CMAKE_HOST_SYSTEM_NAME}" STREQUAL "Darwin")
+            get_filename_component(__NWX_GCC_INSTALL_PREFIX "${CMAKE_Fortran_COMPILER}/../.." ABSOLUTE)
+            set(NWX_GCC_TOOLCHAIN_FLAG "--gcc-toolchain=${__NWX_GCC_INSTALL_PREFIX}")
+            message(STATUS "NWX_GCC_TOOLCHAIN_FLAG: ${NWX_GCC_TOOLCHAIN_FLAG}")
+        endif()
     endif()
 
     if(CMAKE_CXX_COMPILER_ID STREQUAL "Intel")
         set(NWX_EXTRA_FLAGS "-xHost")
     elseif(CMAKE_SYSTEM_PROCESSOR STREQUAL "ppc64le")
         set(NWX_EXTRA_FLAGS "-mtune=native")
-        if(NWX_CUDA)
+        if(USE_CUDA)
             #nvcc does not recgonize -mtune=power9
             set(NWX_EXTRA_FLAGS "-mtune=powerpc64le")
         endif()
@@ -36,8 +45,8 @@ function(build_nwchemex_module SUPER_PROJECT_ROOT)
     endif()
 
     set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wall ${NWX_GCC_TOOLCHAIN_FLAG} ${NWX_EXTRA_FLAGS}")
-    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3 -Wall ${NWX_GCC_TOOLCHAIN_FLAG} ${NWX_EXTRA_FLAGS}")
-    set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -O3 -Wall ${NWX_GCC_TOOLCHAIN_FLAG} ${NWX_EXTRA_FLAGS}")
+    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wall ${NWX_GCC_TOOLCHAIN_FLAG} ${NWX_EXTRA_FLAGS}")
+    set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -Wall ${NWX_GCC_TOOLCHAIN_FLAG} ${NWX_EXTRA_FLAGS}")
 
     string(TOUPPER ${CMAKE_BUILD_TYPE} NWX_CMAKE_BUILD_TYPE)
     set(NWX_CXX_FLAGS CMAKE_CXX_FLAGS_${NWX_CMAKE_BUILD_TYPE})
@@ -47,6 +56,7 @@ function(build_nwchemex_module SUPER_PROJECT_ROOT)
     option_w_default(BUILD_SHARED_LIBS OFF)
     option_w_default(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
     option_w_default(BUILD_TESTS ON)    #Should we build the tests?
+    option_w_default(BUILD_METHODS ON)
     option_w_default(NWX_DEBUG_CMAKE TRUE) #Enable lots of extra CMake printing?
     option_w_default(CMAKE_EXPORT_COMPILE_COMMANDS ON)
     option_w_default(CMAKE_VERBOSE_MAKEFILE ${NWX_DEBUG_CMAKE})
@@ -83,14 +93,15 @@ function(build_nwchemex_module SUPER_PROJECT_ROOT)
 
     bundle_cmake_args(DEPENDENCY_CMAKE_OPTIONS ${NWX_CORE_OPTIONS})
 
-    if (SCALAPACK) 
-        bundle_cmake_args(DEPENDENCY_CMAKE_OPTIONS SCALAPACK)
+    if (USE_SCALAPACK) 
+        bundle_cmake_args(DEPENDENCY_CMAKE_OPTIONS USE_SCALAPACK)
         set(TAMM_CXX_FLAGS "${TAMM_CXX_FLAGS} -DSCALAPACK")
     endif()
 
     string(FIND "${LAPACKE_LIBRARIES}" "mkl" FINDLAPACKE_mkl_found)
     string(FIND "${LAPACKE_LIBRARIES}" "essl" FINDLAPACKE_essl_found)
 
+    #TODO: Check if we are using 4-byte int libs when using ScaLAPACK
     if(NOT "${FINDLAPACKE_mkl_found}" STREQUAL "-1")
         string(FIND "${LAPACKE_LIBRARIES}" "ilp64" _mkl_ilp64_found)
         if(NOT "${_mkl_ilp64_found}" STREQUAL "-1")
@@ -108,7 +119,7 @@ function(build_nwchemex_module SUPER_PROJECT_ROOT)
         endif()            
     endif()
     
-    bundle_cmake_args(DEPENDENCY_CMAKE_OPTIONS BLAS_INT4)
+    bundle_cmake_args(DEPENDENCY_CMAKE_OPTIONS BLAS_INT4 ENABLE_COVERAGE)
 
     print_banner("Locating Dependencies and Creating Targets")
     ################################################################################
@@ -129,6 +140,22 @@ function(build_nwchemex_module SUPER_PROJECT_ROOT)
             endif()
 
         endforeach()
+
+        if(ENABLE_COVERAGE)
+            set(TAMM_CXX_FLAGS "${TAMM_CXX_FLAGS} --coverage -O0")
+            list(APPEND TAMM_EXTRA_LIBS --coverage)
+        endif()
+
+        if(USE_CUDA)
+            set(TAMM_CXX_FLAGS "${TAMM_CXX_FLAGS} -DUSE_CUDA")
+        endif()
+
+        if(USE_DPCPP)
+            # if(USE_OPENMP)
+            #     message(FATAL_ERROR "DPCPP build requires USE_OPENMP=OFF")
+            # endif()
+            set(TAMM_CXX_FLAGS "${TAMM_CXX_FLAGS} -DUSE_DPCPP -fsycl")
+        endif()      
 
         set(${NWX_CXX_FLAGS} "${${NWX_CXX_FLAGS}} ${TAMM_CXX_FLAGS}")
         bundle_cmake_strings(CORE_CMAKE_STRINGS ${NWX_CXX_FLAGS})
@@ -156,9 +183,37 @@ function(build_nwchemex_module SUPER_PROJECT_ROOT)
             message(STATUS "TAMM_EXTRA_LIBS: ${TAMM_EXTRA_LIBS}")
         endif()
 
-        if(NWX_CUDA)
-            bundle_cmake_strings(CORE_CMAKE_STRINGS NWX_CUDA NWX_GPU_ARCH)
+        if(USE_CUDA)
+            if(NOT USE_OPENMP)
+                message(FATAL_ERROR "CUDA build requires USE_OPENMP=ON")
+            endif()
+            bundle_cmake_strings(CORE_CMAKE_STRINGS USE_CUDA NV_GPU_ARCH CUDA_MAXREGCOUNT)
+            if(USE_CUTENSOR)
+                bundle_cmake_strings(CORE_CMAKE_STRINGS USE_CUTENSOR)
+                if(CUTENSOR_INSTALL_PREFIX)
+                    bundle_cmake_strings(CORE_CMAKE_STRINGS CUTENSOR_INSTALL_PREFIX)
+                else()
+                    message(FATAL_ERROR "USE_CUTENSOR=ON, but CUTENSOR_INSTALL_PREFIX not provided")
+                endif()
+            endif()
         endif()
+
+        if(USE_OPENMP)
+            bundle_cmake_strings(CORE_CMAKE_STRINGS USE_OPENMP)
+            if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+                if("${CMAKE_HOST_SYSTEM_NAME}" STREQUAL "Darwin" OR USE_DPCPP)
+                    bundle_cmake_strings(CORE_CMAKE_STRINGS OpenMP_C_FLAGS OpenMP_CXX_FLAGS)
+                    bundle_cmake_strings(CORE_CMAKE_STRINGS OpenMP_C_LIB_NAMES OpenMP_CXX_LIB_NAMES OpenMP_omp_LIBRARY OpenMP_libiomp5_LIBRARY)
+                endif()
+            endif()
+        endif()  
+        
+        if(USE_GA_DEV)
+            bundle_cmake_strings(CORE_CMAKE_STRINGS USE_GA_DEV)
+            if(USE_GA_PROFILER)
+                bundle_cmake_strings(CORE_CMAKE_STRINGS USE_GA_PROFILER)
+            endif()
+        endif()        
 
         ExternalProject_Add(${__project}_External
                 SOURCE_DIR ${${__project}_SRC_DIR}
@@ -201,6 +256,30 @@ function(build_nwchemex_module SUPER_PROJECT_ROOT)
             file(WRITE ${CMAKE_BINARY_DIR}/CTestTestfile.cmake
                     "subdirs(test_stage${CMAKE_INSTALL_PREFIX}/tests)")
         endif()
+        if(${BUILD_METHODS})
+            list(APPEND METHOD_DEPENDS "CMakeBuild" "${__project}")
+            ExternalProject_Add(${__project}_Methods_External
+                    SOURCE_DIR ${${__project}_METHODS_DIR}
+                    CMAKE_ARGS -DSUPER_PROJECT_ROOT=${SUPER_PROJECT_ROOT}
+                               -DNWX_DEBUG_CMAKE=${NWX_DEBUG_CMAKE}
+                               -DSTAGE_INSTALL_DIR=${STAGE_INSTALL_DIR}
+                               ${CORE_CMAKE_OPTIONS}
+
+                    BUILD_ALWAYS 1
+                    INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} install DESTDIR=${METHODS_STAGE_DIR}
+                    CMAKE_CACHE_ARGS ${CORE_CMAKE_LISTS}
+                                     ${CORE_CMAKE_STRINGS}
+                                     ${DEPENDENCY_PATHS}
+                                     -DNWX_DEPENDENCIES:LIST=${METHOD_DEPENDS}
+                    )
+            add_dependencies(${__project}_Methods_External ${__project}_External)
+
+            # This file will allow us to run ctest in the top-level build dir
+            # Basically it just defers to the actual top-level CTestTestfile.cmake in the
+            # build directory for this project
+            file(APPEND ${CMAKE_BINARY_DIR}/CTestTestfile.cmake
+                    "\nsubdirs(methods_stage${CMAKE_INSTALL_PREFIX}/methods)")
+        endif()        
     endforeach()
 
     # Install the staging directory
