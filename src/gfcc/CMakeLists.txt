@@ -7,7 +7,7 @@ set(gfcc_SRCS gf_ccsd.cpp)
 
 #Add the current directory's header files to the list
 set(gfcc_INCLUDES
-    gf_ccsd.hpp  gf_diis.hpp  gf_guess.hpp gfccsd_ip.hpp
+    gf_ccsd.hpp  gf_guess.hpp gfccsd_ip.hpp
     contrib/ccsd_util.hpp          contrib/cd_svd_ga.hpp  
     contrib/cd_ccsd_common.hpp     contrib/diis.hpp       
     contrib/hf_common.hpp          contrib/scf_guess.hpp
