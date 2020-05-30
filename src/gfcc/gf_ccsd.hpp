@@ -2029,6 +2029,8 @@ void gfccsd_main_driver(std::string filename) {
       //end of alpha
     }   
 
+    sch.deallocate(cholVpr,d_f1,d_t1,d_t2).execute();
+
     /////////////////Free tensors////////////////////////////
     //#endif
 
