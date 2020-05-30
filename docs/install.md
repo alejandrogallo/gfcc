@@ -52,7 +52,7 @@ mkdir build && cd build
 CC=gcc CXX=g++ FC=gfortran cmake -DCMAKE_INSTALL_PREFIX=$GFCC_INSTALL_PATH ..
 
 #CUDA Options
-[-DNWX_CUDA=ON] #OFF by Default
+[-DUSE_CUDA=ON] #OFF by Default
 
 # make step takes a while, please use as many cores as possible
 make -j3
@@ -81,6 +81,9 @@ Step 4: Running the GFCC code
 # Advanced Build Options for TAMM/libGFCC (applies to Steps 2 & 3)
 -------------------------------------------------------------------
 
+The following configurations are to be used to replace the `cmake` command in Steps 2 and 3.   
+The remaining instructions in Steps 2 & 3 stay the same.
+
 Build using GCC+MKL
 ----------------------------
 
@@ -101,13 +104,11 @@ CC=gcc CXX=g++ FC=gfortran cmake \
 -DCMAKE_INSTALL_PREFIX=$GFCC_INSTALL_PATH \
 -DCBLAS_LIBRARIES=$TAMM_BLASLIBS \
 -DLAPACKE_LIBRARIES=$TAMM_BLASLIBS ..
-```
+
+To enable CUDA build, add -DUSE_CUDA=ON
 
 ```
-make -j3
-make install
-ctest (optional)
-```
+
 
 Build instructions for Summit (using GCC+ESSL)
 ----------------------------------------------
@@ -137,10 +138,10 @@ CC=gcc CXX=g++ FC=gfortran cmake \
 -DCBLAS_LIBRARIES=$TAMM_BLASLIBS \
 -DLAPACKE_LIBRARIES=$TAMM_BLASLIBS \
 -DTAMM_CXX_FLAGS="-mcpu=power9" \
--DBLIS_CONFIG=power9 ..
--DTAMM_EXTRA_LIBS="$NETLIB_BLAS_LIBS/liblapack.a" 
+-DBLIS_CONFIG=power9 .. \
+-DTAMM_EXTRA_LIBS=$NETLIB_BLAS_LIBS/liblapack.a 
 
-To enable CUDA build, add -DNWX_CUDA=ON
+To enable CUDA build, add -DUSE_CUDA=ON
 
 ```
 
@@ -181,7 +182,7 @@ CC=cc CXX=CC FC=ftn cmake -DCBLAS_INCLUDE_DIRS=$MKL_INC \
 -DCBLAS_LIBRARIES=$TAMM_BLASLIBS \
 -DLAPACKE_LIBRARIES=$TAMM_BLASLIBS ..
 
-To enable CUDA build, add -DNWX_CUDA=ON
+To enable CUDA build, add -DUSE_CUDA=ON
 
 ```
 Build instructions for Mac OS
@@ -233,6 +234,7 @@ make install
 
 cd $GFCC_SRC/contrib/TAMM
 mkdir build && cd build
+// To enable CUDA build, add -DUSE_CUDA=ON
 CC=gcc-8 CXX=g++-8 FC=gfortran-8 cmake -DCMAKE_INSTALL_PREFIX=$GFCC_INSTALL_PATH ..
 make -j3 install
 ctest (optional)
