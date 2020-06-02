@@ -74,7 +74,7 @@ make -j2
 Step 4: Running the GFCC code
 ------------------------------
 `cd $GFCC_SRC/build`   
-`mpirun -n 4 ./test_stage/$GFCC_INSTALL_PATH/tests/GF_CCSD ../tests/co.nwx`
+`mpirun -n 4 ./test_stage/$GFCC_INSTALL_PATH/methods/GF_CCSD ../tests/co.nwx`
 
 
 -------------------------------------------------------------------
