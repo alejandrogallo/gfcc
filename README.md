@@ -4,7 +4,7 @@ Prototype code for the GFCC library.
 
 Installation instructions can be found [here](docs/install.md)
 
-Document describing the code: [gfcclib.pdf](docs/gfcclib.pdf)
+Document describing the code: [gfcclib.pdf](https://github.com/spec-org/gfcc/raw/master/docs/gfcclib.pdf)
 
 FAQ entries at [FAQ.md](docs/FAQ.md)
 
