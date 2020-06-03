@@ -31,12 +31,14 @@ find_library(GLOBALARRAYS_C_LIBRARY NAMES ga
              HINTS ${PC_GLOBALARRAYS_LIBDIR}
                    ${PC_GLOBALARRAYS_LIBRARY_DIRS}
              PATHS ${GLOBALARRAYS_ROOT_DIR}
+             NO_CMAKE_SYSTEM_PATH
         )
 
 find_library(GLOBALARRAYS_ARMCI_LIBRARY NAMES armci
              HINTS ${PC_GLOBALARRAYS_LIBDIR}
                    ${PC_GLOBALARRAYS_LIBRARY_DIRS}
              PATHS ${GLOBALARRAYS_ROOT_DIR}
+             NO_CMAKE_SYSTEM_PATH
         )
 find_package_handle_standard_args(GlobalArrays DEFULT_MSG GLOBALARRAYS_C_LIBRARY
         GLOBALARRAYS_ARMCI_LIBRARY)
