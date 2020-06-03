@@ -4,8 +4,12 @@ Prototype code for the GFCC library.
 
 Installation instructions can be found [here](docs/install.md)
 
-Document describing the code: [gfcclib.pdf](https://github.com/spec-org/gfcc/raw/master/docs/gfcclib.pdf)
-
+Document describing the code: 
+<object data="https://github.com/spec-org/gfcc/raw/master/docs/gfcclib.pdf" type="application/pdf" width="700px" height="700px">
+    <embed src="https://github.com/spec-org/gfcc/raw/master/docs/gfcclib.pdf">
+        <p>This browser does not support PDFs. Please download the PDF to view it: <a href="https://github.com/spec-org/gfcc/raw/master/docs/gfcclib.pdf">Download PDF</a>.</p>
+    </embed>
+</object>
 FAQ entries at [FAQ.md](docs/FAQ.md)
 
 ### Citing GFCCLib
