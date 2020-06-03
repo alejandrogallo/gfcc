@@ -88,10 +88,14 @@ function(find_dependency __name)
                             ${${name_var}_INCLUDE_DIRS})
                 endif()
 
-                is_valid(${name_var}_LIBRARIES __has_libs)
-                if(__has_libs)
-                    target_link_libraries(${_tname} INTERFACE
-                            ${${name_var}_LIBRARIES})
+                if(${__NAME} STREQUAL "LIBINT2")
+                    target_link_libraries(${_tname} INTERFACE Libint2::cxx)  
+                else()
+                    is_valid(${name_var}_LIBRARIES __has_libs)
+                    if(__has_libs)
+                        target_link_libraries(${_tname} INTERFACE
+                                ${${name_var}_LIBRARIES})
+                    endif()
                 endif()
 
                 is_valid(${name_var}_DEFINITIONS __has_defs)

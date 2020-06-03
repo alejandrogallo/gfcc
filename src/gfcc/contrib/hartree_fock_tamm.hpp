@@ -59,19 +59,26 @@ std::tuple<SystemData, double, libint2::BasisSet, std::vector<size_t>,
     // initializes the Libint integrals library ... now ready to compute
     libint2::initialize(false);
     libint2::Shell::do_enforce_unit_normalization(false);
+    auto rank      = exc.pg().rank();
 
     /*** =========================== ***/
     /*** create basis set            ***/
     /*** =========================== ***/
 
-    // LIBINT_INSTALL_DIR/share/libint/2.4.0-beta.1/basis
+    std::string basis_set_file = std::string(DATADIR) + "/basis/" + basis + ".g94";
+    
+    int basis_file_exists = 0;
+    if(rank == 0) basis_file_exists = std::filesystem::exists(basis_set_file);
+
+    MPI_Bcast(&basis_file_exists        ,1,mpi_type<int>()       ,0,exc.pg().comm());  
+    if (!basis_file_exists) nwx_terminate("basis set file " + basis_set_file + " does not exist");
+
     libint2::BasisSet shells(std::string(basis), atoms);
     if(is_spherical) shells.set_pure(true);
     else shells.set_pure(false);  // use cartesian gaussians
 
     // auto shells = make_sto3g_basis(atoms);
     const size_t N = nbasis(shells);
-    auto rank      = exc.pg().rank();
     auto nnodes    = GA_Cluster_nnodes();
 
     sys_data.nbf      = N;
