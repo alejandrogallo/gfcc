@@ -7,3 +7,7 @@ This error might occur during the final stage of the gfcc compilation. Please ad
 cmake -DCMAKE_INSTALL_PREFIX=$GFCC_INSTALL_PATH -DTAMM_EXTRA_LIBS="-lmemkind" ..
 ```
 
+## Job crashes with Bus error
+
+This is a known issue that occurs when limited amount of memory is available.  
+https://github.com/spec-org/gfcc/issues/1
