@@ -150,5 +150,3 @@ function(makify_dependency __depend __incs __libs)
     set(${__incs} ${${__incs}} PARENT_SCOPE)
     set(${__libs} ${${__libs}} PARENT_SCOPE)
 endfunction()
-
-
