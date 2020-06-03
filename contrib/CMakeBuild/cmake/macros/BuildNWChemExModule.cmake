@@ -286,6 +286,15 @@ function(build_nwchemex_module SUPER_PROJECT_ROOT)
     install(DIRECTORY ${STAGE_INSTALL_DIR}/
             DESTINATION ${CMAKE_INSTALL_PREFIX} USE_SOURCE_PERMISSIONS)
 
+    if(${PROJECT_NAME} STREQUAL "tamm")
+        get_target_property(LI_CD Libint2::cxx INTERFACE_COMPILE_DEFINITIONS)
+        string(REPLACE "=" " " LI_CD ${LI_CD})
+        separate_arguments(LI_CD UNIX_COMMAND ${LI_CD})
+        list (GET LI_CD 1 LI_BASIS_SET_PATH)
+        install(DIRECTORY ${CMAKE_SOURCE_DIR}/../basis/
+                DESTINATION ${LI_BASIS_SET_PATH}/basis USE_SOURCE_PERMISSIONS)
+    endif()
+
     ############################################################################
     #
     # Let the user know all the settings we worked out
