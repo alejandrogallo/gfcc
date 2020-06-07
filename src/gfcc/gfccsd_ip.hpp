@@ -59,7 +59,7 @@ void gfccsd_x1_a(/* ExecutionContext& ec, */
       ( i0_a(h1_oa) +=  0.5 * x2_aaa(p7_va,h6_oa,h8_oa) * ix2_6_3_aaaa(h6_oa,h8_oa,h1_oa,p7_va) )
       ( i0_a(h1_oa) +=        x2_bab(p7_vb,h6_oa,h8_ob) * ix2_6_3_abab(h6_oa,h8_ob,h1_oa,p7_vb) );      
     }
-    if(debug) sch.execute();
+    //if(debug) sch.execute();
 
 }
 
@@ -287,7 +287,7 @@ void gfccsd_x2_a(/* ExecutionContext& ec, */
                 i_10_a,i_11_aaa,i_11_bab,i_11_bba,
                 i0_temp_aaa,i0_temp_bab,i0_temp_bba,
                 i_6_temp_aaa,i_6_temp_bab,i_6_temp_bba);
-    if(debug) sch.execute();
+    //if(debug) sch.execute();
 
 }
 

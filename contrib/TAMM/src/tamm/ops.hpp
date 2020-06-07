@@ -1656,6 +1656,10 @@ public:
         return std::shared_ptr<Op>(new MultOp{*this});
     }
 
+    using TensorElType1 = typename LabeledTensorT1::element_type;
+    using TensorElType2 = typename LabeledTensorT2::element_type;
+    using TensorElType3 = typename LabeledTensorT3::element_type;
+
     void execute(ExecutionContext& ec, ExecutionHW hw = ExecutionHW::CPU) override {
         EXPECTS(!is_assign_);
         #if 1
@@ -1668,11 +1672,7 @@ public:
                           rhs2_.labels().end());
         LabelLoopNest loop_nest{all_labels};
 
-        std::vector<AddBuf<T>*> add_bufs;
-
-        using TensorElType1 = typename LabeledTensorT1::element_type;
-        using TensorElType2 = typename LabeledTensorT2::element_type;
-        using TensorElType3 = typename LabeledTensorT3::element_type;
+        std::vector<AddBuf<TensorElType1>*> add_bufs;
 
         // function to compute one block
         auto lambda = [=,&add_bufs,&loop_nest](const IndexVector itval) {
@@ -1991,7 +1991,8 @@ public:
 	       !has_sparse_labels && !lhs_.labels().empty() ) { //&& num_lhs_tiles >= ec.pg().size() ) {
                 // std::cout << "Execute Buffer Accumulate" << std::endl;
                 if constexpr(std::is_same_v<TensorElType1,TensorElType2> 
-                         && std::is_same_v<TensorElType1,TensorElType3>) {                
+                            && std::is_same_v<TensorElType1,TensorElType3>
+                            && !internal::is_complex_v<TensorElType1>) {
                     execute_bufacc(ec, hw);
                 }
                 else do_work(ec, loop_nest, lambda);

@@ -501,6 +501,12 @@ void gfccsd_driver_ip_a(ExecutionContext& gec, ExecutionContext& sub_ec, MPI_Com
                   ix2_6_3_bbbb, ix2_6_3_baab,
                   v2ijab_aaaa, v2ijab_abab, v2ijab_bbbb,
                   unit_tis,false);
+        
+        #ifdef USE_TALSH
+          sch.execute(ExecutionHW::GPU);
+        #else
+          sch.execute();
+        #endif
 
       sch 
         .allocate(r1_a,  r2_aaa,  r2_bab)
@@ -584,6 +590,12 @@ void gfccsd_driver_ip_a(ExecutionContext& gec, ExecutionContext& sub_ec, MPI_Com
                     v2ijab_aaaa, v2ijab_abab, v2ijab_bbbb,
                     unit_tis,false);
 
+        #ifdef USE_TALSH
+          sch.execute(ExecutionHW::GPU);
+        #else
+          sch.execute();
+        #endif
+        
         sch 
           .allocate(q1_a,q2_aaa,q2_bab)
           (q1_a()    = 1.0 * Hx1_a())
@@ -1143,8 +1155,13 @@ void gfccsd_main_driver(std::string filename) {
         ( v2iajb(h1,p1,h2,p2)      =   1.0 * cholVpr(h1,h2,cind) * cholVpr(p1,p2,cind) )
         ( v2iajb(h1,p1,h2,p2)     +=  -1.0 * cholVpr(h1,p2,cind) * cholVpr(h2,p1,cind) )
         ( v2ijab(h1,h2,p1,p2)      =   1.0 * cholVpr(h1,p1,cind) * cholVpr(h2,p2,cind) )
-        ( v2ijab(h1,h2,p1,p2)     +=  -1.0 * cholVpr(h1,p2,cind) * cholVpr(h2,p1,cind) )
-        .execute();
+        ( v2ijab(h1,h2,p1,p2)     +=  -1.0 * cholVpr(h1,p2,cind) * cholVpr(h2,p1,cind) );
+
+        #ifdef USE_TALSH
+          sch.execute(ExecutionHW::GPU);
+        #else
+          sch.execute();
+        #endif        
 
     if(fs::exists(d_t1_a_file)      && fs::exists(d_t1_b_file)      &&
        fs::exists(d_t2_aaaa_file)   && fs::exists(d_t2_bbbb_file)   && fs::exists(d_t2_abab_file)   &&
@@ -1448,8 +1465,14 @@ void gfccsd_main_driver(std::string filename) {
                         ix2_4_1,ix2_4_temp,ix2_4,
                         ix2_5,
                         ix2_6_2,ix2_6_3,
-                        v2ijkl,v2iabc)
-            .execute();
+                        v2ijkl,v2iabc);
+            
+            #ifdef USE_TALSH
+              sch.execute(ExecutionHW::GPU);
+            #else
+              sch.execute();
+            #endif    
+
         #if GF_IN_SG
         }
         ec.pg().barrier();
@@ -1654,7 +1677,7 @@ void gfccsd_main_driver(std::string filename) {
               else {
                 nwx_terminate("ERROR: At least one of " + x1_a_wpi_file + " and " + x2_aaa_wpi_file + " and " + x2_bab_wpi_file + " do not exist!");
               }
-              
+  
               if(ivec>0){
                 TiledIndexSpace tsc{otis, range(0,ivec)};
                 auto [sc] = tsc.labels<1>("all");
@@ -1785,11 +1808,19 @@ void gfccsd_main_driver(std::string filename) {
                     otis,true);
   
             #if GF_IN_SG
-              sub_sch.execute();    
+              #ifdef USE_TALSH
+                sub_sch.execute(ExecutionHW::GPU);
+              #else
+                sub_sch.execute();
+              #endif       
             }
             ec.pg().barrier();
             #else 
-              sch.execute();    
+              #ifdef USE_TALSH
+                sch.execute(ExecutionHW::GPU);
+              #else
+                sch.execute();
+              #endif       
             #endif
             write_to_disk(Hx1_tamm_a,  hx1_a_file);
             write_to_disk(Hx2_tamm_aaa,hx2_aaa_file);
@@ -1837,8 +1868,13 @@ void gfccsd_main_driver(std::string filename) {
              ( p1_k_a(p1_va,otil)  =        d_t2_aaaa(p1_va,p2_va,h1_oa,h2_oa) * q2_tamm_aaa(p2_va,h1_oa,h2_oa,otil) )
              ( p1_k_a(p1_va,otil) +=  2.0 * d_t2_abab(p1_va,p2_vb,h1_oa,h2_ob) * q2_tamm_bab(p2_vb,h1_oa,h2_ob,otil) )
              ( Cp_a(h1_oa,otil)   += -0.5 * p1_k_a(p1_va,otil) * d_t1_a(p1_va,h1_oa) )
-             .deallocate(p1_k_a,q1_tamm_a, q2_tamm_aaa, q2_tamm_bab)
-             .execute();
+             .deallocate(p1_k_a,q1_tamm_a, q2_tamm_aaa, q2_tamm_bab);
+
+              #ifdef USE_TALSH
+                sch.execute(ExecutionHW::GPU);
+              #else
+                sch.execute();
+              #endif                   
         } //if !gf_restart
 
         auto cc_t2 = std::chrono::high_resolution_clock::now();
