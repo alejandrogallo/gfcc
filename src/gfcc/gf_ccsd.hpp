@@ -800,6 +800,7 @@ void gfccsd_driver_ip_a(ExecutionContext& gec, ExecutionContext& sub_ec, MPI_Com
   #if GF_PGROUPS
     ec.flush_and_sync();
     //MemoryManagerGA::destroy_coll(mgr);    
+    pg.destroy_coll();
   #endif
   ac->deallocate();
   delete ac;
