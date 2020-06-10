@@ -1,12 +1,14 @@
 # Green’s Function Coupled Cluster Library (GFCCLib) v. 1.0
 
-Prototype code for the GFCC library.
+GFCCLib is designed for the Green's function calculation of molecular system at the coupled-cluster level. 
+The library is developed in the C++ programming language with a framework that enables scalability
+(via scalable design of the algorithm), efficiency via multi-layer parallelism, memory management, and scheduling of tensor operations, and flexibility by providing a long-term sustainable platform for development of methods in this area on machines ranging from workstations to modern supercomputers.
 
 Installation instructions can be found [here](docs/install.md)
 
-Document describing the code:  [gfcclib.pdf](docs/gfcclib.pdf)
-
 FAQ entries at [FAQ.md](docs/FAQ.md)
+
+Document describing the code:  [gfcclib.pdf](docs/gfcclib.pdf)
 
 Changelog at [ChangeLog.md](ChangeLog.md)
 
