@@ -1,4 +1,4 @@
-# Green’s Function Coupled Cluster Library (GFCCLib) v. 1.0
+# Green’s Function Coupled Cluster Library (GFCCLib)
 
 GFCCLib is designed for the Green's function calculation of molecular system at the coupled-cluster level. 
 The library is developed in the C++ programming language with a framework that enables scalability
