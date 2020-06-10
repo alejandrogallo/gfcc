@@ -8,6 +8,8 @@ Document describing the code:  [gfcclib.pdf](docs/gfcclib.pdf)
 
 FAQ entries at [FAQ.md](docs/FAQ.md)
 
+Changelog at [ChangeLog.md](ChangeLog.md)
+
 ### Citing GFCCLib
 If you are referencing GFCCLib in a publication, please cite the following JCP paper:
 
