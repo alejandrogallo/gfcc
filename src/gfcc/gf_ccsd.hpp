@@ -276,17 +276,17 @@ void gfccsd_driver_ip_a(ExecutionContext& gec, ExecutionContext& sub_ec, MPI_Com
     };
 
     gsch.allocate(DEArr_IP).execute();
-    if(subcomm != MPI_COMM_NULL){
-        Scheduler sub_sch{sub_ec};
-        sub_sch(DEArr_IP() = 0).execute();        
-        block_for(sub_ec, DEArr_IP(), DEArr_lambda);
-        sub_sch      
+    // if(subcomm != MPI_COMM_NULL){
+    //     Scheduler sub_sch{sub_ec};
+        gsch(DEArr_IP() = 0).execute();        
+        block_for(gec, DEArr_IP(), DEArr_lambda);
+        gsch      
           (dtmp_aaa() = 0)
           (dtmp_bab() = 0)
           (dtmp_aaa(p1_va,h1_oa,h2_oa) = DEArr_IP(p1_va,h1_oa,h2_oa))
           (dtmp_bab(p1_vb,h1_oa,h2_ob) = DEArr_IP(p1_vb,h1_oa,h2_ob))
           .execute();
-    }
+    // }
     gec.pg().barrier();
     gsch.deallocate(DEArr_IP).execute();
     write_to_disk(dtmp_aaa,dtmp_aaa_file);
@@ -437,7 +437,7 @@ void gfccsd_driver_ip_a(ExecutionContext& gec, ExecutionContext& sub_ec, MPI_Com
     double gf_t_res_tot_2 = 0.0;
     double gf_t_upd_tot   = 0.0;
     double gf_t_dis_tot   = 0.0;
-    size_t gf_iter        = 1;
+    size_t gf_iter        = 0;
 
     std::string x1_a_inter_wpi_file = files_prefix+".x1_a.inter.w"+gfo.str()+".oi"+std::to_string(pi);
     std::string x2_aaa_inter_wpi_file = files_prefix+".x2_aaa.inter.w"+gfo.str()+".oi"+std::to_string(pi);
@@ -470,6 +470,7 @@ void gfccsd_driver_ip_a(ExecutionContext& gec, ExecutionContext& sub_ec, MPI_Com
     sch.allocate(tmp).execute();
 
     do {
+      gf_iter++;
 
       auto gf_gmres_0 = std::chrono::high_resolution_clock::now();
 
@@ -501,12 +502,6 @@ void gfccsd_driver_ip_a(ExecutionContext& gec, ExecutionContext& sub_ec, MPI_Com
                   ix2_6_3_bbbb, ix2_6_3_baab,
                   v2ijab_aaaa, v2ijab_abab, v2ijab_bbbb,
                   unit_tis,false);
-        
-        #ifdef USE_TALSH
-          sch.execute(ExecutionHW::GPU);
-        #else
-          sch.execute();
-        #endif
 
       sch 
         .allocate(r1_a,  r2_aaa,  r2_bab)
@@ -516,8 +511,13 @@ void gfccsd_driver_ip_a(ExecutionContext& gec, ExecutionContext& sub_ec, MPI_Com
         (r1_a(h1_oa)               -= std::complex<double>(gf_omega,-1.0*gf_eta) * x1_a(h1_oa))
         (r2_aaa(p1_va,h1_oa,h2_oa) -= std::complex<double>(gf_omega,-1.0*gf_eta) * x2_aaa(p1_va,h1_oa,h2_oa))
         (r2_bab(p1_vb,h1_oa,h2_ob) -= std::complex<double>(gf_omega,-1.0*gf_eta) * x2_bab(p1_vb,h1_oa,h2_ob))
-        (r1_a() += B1_a())
-        .execute();
+        (r1_a() += B1_a());
+
+        #ifdef USE_TALSH
+          sch.execute(ExecutionHW::GPU);
+        #else
+          sch.execute();
+        #endif
 
       auto r1_a_norm   = norm(r1_a);
       auto r2_aaa_norm = norm(r2_aaa);
@@ -557,10 +557,10 @@ void gfccsd_driver_ip_a(ExecutionContext& gec, ExecutionContext& sub_ec, MPI_Com
       CMatrix b  = CMatrix::Zero(gmres_hist+1, 1);
       b(0, 0)    = gf_residual;
 
-      // if(root_ppi==0) cout << "gf_iter: " << gf_iter << endl;
 
       // GMRES inner loop
-      for(auto k=0; k<gmres_hist; k++) {
+      int64_t k = 0;
+      for(k=0; k<gmres_hist; k++) {
 
         ComplexTensor q1_a{o_alpha};
         ComplexTensor q2_aaa{v_alpha,o_alpha,o_alpha};
@@ -590,12 +590,6 @@ void gfccsd_driver_ip_a(ExecutionContext& gec, ExecutionContext& sub_ec, MPI_Com
                     v2ijab_aaaa, v2ijab_abab, v2ijab_bbbb,
                     unit_tis,false);
 
-        #ifdef USE_TALSH
-          sch.execute(ExecutionHW::GPU);
-        #else
-          sch.execute();
-        #endif
-        
         sch 
           .allocate(q1_a,q2_aaa,q2_bab)
           (q1_a()    = 1.0 * Hx1_a())
@@ -603,8 +597,13 @@ void gfccsd_driver_ip_a(ExecutionContext& gec, ExecutionContext& sub_ec, MPI_Com
           (q2_bab()  = 1.0 * Hx2_bab())
           (q1_a()   += std::complex<double>(gf_omega,-1.0*gf_eta) * Q1_a[k]())
           (q2_aaa() += std::complex<double>(gf_omega,-1.0*gf_eta) * Q2_aaa[k]())
-          (q2_bab() += std::complex<double>(gf_omega,-1.0*gf_eta) * Q2_bab[k]())
-          .execute();
+          (q2_bab() += std::complex<double>(gf_omega,-1.0*gf_eta) * Q2_bab[k]());
+
+        #ifdef USE_TALSH
+          sch.execute(ExecutionHW::GPU);
+        #else
+          sch.execute();
+        #endif
 
         auto gf_gmres_2 = std::chrono::high_resolution_clock::now();
         double gftime =
@@ -623,9 +622,15 @@ void gfccsd_driver_ip_a(ExecutionContext& gec, ExecutionContext& sub_ec, MPI_Com
             (q1_a()   -= tmp() * Q1_a[j]())
             (q2_aaa() -= tmp() * Q2_aaa[j]())
             (q2_bab() -= tmp() * Q2_bab[j]())
-            .deallocate(conj_a,conj_aaa,conj_bab) 
-            .execute();
-            
+            .deallocate(conj_a,conj_aaa,conj_bab);
+            // .execute();
+
+            #ifdef USE_TALSH
+              sch.execute(ExecutionHW::GPU);
+            #else
+              sch.execute();
+            #endif
+
           H(j,k) = get_scalar(tmp);
         } // j loop
 
@@ -700,7 +705,7 @@ void gfccsd_driver_ip_a(ExecutionContext& gec, ExecutionContext& sub_ec, MPI_Com
       auto gf_gmres_5 = std::chrono::high_resolution_clock::now();
       gftime =
         std::chrono::duration_cast<std::chrono::duration<double>>((gf_gmres_5 - gf_gmres)).count();
-      if(root_ppi==0 && debug) cout << "  #iter " << gf_iter << ", T(micro_tot): " << gftime << endl;
+      if(root_ppi==0 && debug) cout << "  pi = " << pi << ", k: " << k << ", #iter " << gf_iter << ", T(micro_tot): " << gftime << endl;
 
       //solve a least square problem in the subspace
       CMatrix Hsub = H.block(0,0,gmres_hist,gmres_hist);
@@ -729,7 +734,6 @@ void gfccsd_driver_ip_a(ExecutionContext& gec, ExecutionContext& sub_ec, MPI_Com
         std::chrono::duration_cast<std::chrono::duration<double>>((gf_gmres_6 - gf_gmres_5)).count();
       if(root_ppi==0 && debug) cout << "  #iter " << gf_iter << ", T(least_square+X_updat+misc.): " << gftime << endl;
 
-      gf_iter++;
                 
     }while(true);
 
@@ -950,6 +954,13 @@ void gfccsd_main_driver(std::string filename) {
             p_evl_sorted, 
             cholVpr, ccsd_restart, files_prefix);
       }
+      else{
+        std::tie(residual, corr_energy) = cd_ccsd_driver<T>(
+              sys_data, ec, MO, CI, d_t1, d_t2, d_f1, 
+              d_r1,d_r2, d_r1s, d_r2s, d_t1s, d_t2s, 
+              p_evl_sorted, 
+              cholVpr, ccsd_restart, files_prefix);
+      }      
       ec.pg().barrier();
     }
     else{
@@ -1629,12 +1640,12 @@ void gfccsd_main_driver(std::string filename) {
             
             ivec_start = prev_qr_rank;
   
-            if(subcomm != MPI_COMM_NULL){
-              sub_sch
+            // if(subcomm != MPI_COMM_NULL){
+              sch
                 (q1_tamm_a(h1_oa,op1) = q1_prev_a(h1_oa,op1))
                 (q2_tamm_aaa(p1_va,h1_oa,h2_oa,op1) = q2_prev_aaa(p1_va,h1_oa,h2_oa,op1))
                 (q2_tamm_bab(p1_vb,h1_oa,h2_ob,op1) = q2_prev_bab(p1_vb,h1_oa,h2_ob,op1)).execute();
-            }          
+            // }                
             sch.deallocate(q1_prev_a,q2_prev_aaa,q2_prev_bab).execute();           
           }     
   
@@ -1739,13 +1750,13 @@ void gfccsd_main_driver(std::string filename) {
               TiledIndexSpace tsc{otis, range(ivec,ivec+1)};
               auto [sc] = tsc.labels<1>("all");
   
-              if(subcomm != MPI_COMM_NULL){
-                sub_sch
+              // if(subcomm != MPI_COMM_NULL){
+                sch
                 (q1_tamm_a(h1_oa,sc) = cnewsc * q1_tmp_a(h1_oa))
                 (q2_tamm_aaa(p2_va,h1_oa,h2_oa,sc) = cnewsc * q2_tmp_aaa(p2_va,h1_oa,h2_oa))
                 (q2_tamm_bab(p2_vb,h1_oa,h2_ob,sc) = cnewsc * q2_tmp_bab(p2_vb,h1_oa,h2_ob))
                 .execute();
-              }
+              // }
               ec.pg().barrier();
   
               auto cc_gs = std::chrono::high_resolution_clock::now();
