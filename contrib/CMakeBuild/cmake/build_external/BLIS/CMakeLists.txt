@@ -14,7 +14,7 @@ if(CMAKE_POSITION_INDEPENDENT_CODE)
     string_concat(FPIC_LIST "" " " BLIS_FLAGS)
 endif()
 
-set(BLIS_TAR https://github.com/flame/blis/archive/0.6.0.tar.gz)
+set(BLIS_TAR https://github.com/flame/blis/archive/0.7.0.tar.gz)
 
 set(BLIS_OPT_FLAGS -march=native)
 if(CMAKE_CXX_COMPILER_ID STREQUAL "Intel")

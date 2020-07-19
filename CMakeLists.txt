@@ -6,7 +6,7 @@ set(NWX_PROJECTS gfcc)
 
 set(gfcc_DEPENDENCIES NWX_MPI MSGSL Eigen3 GlobalArrays LibInt2 CBLAS LAPACKE HPTT BLIS tamm)
 
-if(NWX_CUDA) 
+if(USE_CUDA) 
     list(APPEND gfcc_DEPENDENCIES TALSH)
 endif()
 
